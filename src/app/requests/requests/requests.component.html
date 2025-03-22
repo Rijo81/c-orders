@@ -1,0 +1,62 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Solicitudes</ion-title>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Selecione el Tipo de Solicitud</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-item>
+        <ion-label>Tipo de Solicitud</ion-label>
+        <ion-select [(ngModel)]="selectedTypeId" (ionChange)="onTypeChange()">
+          <ion-select-option *ngFor="let type of typeRequests" [value]="type.id">{{ type.name }}</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <div *ngIf="selectedType">
+        <ion-list>
+          <ion-item *ngFor="let field of selectedType.fields; let i = index">
+            <ion-label>{{ field.name }}</ion-label>
+            <ng-container [ngSwitch]="field.type">
+              <ion-input *ngSwitchCase="'string'" [(ngModel)]="formData[field.name]" placeholder="Enter text"></ion-input>
+              <ion-input *ngSwitchCase="'number'" type="number" [(ngModel)]="formData[field.name]" placeholder="Enter number"></ion-input>
+              <ion-select *ngSwitchCase="'list'" [(ngModel)]="formData[field.name]">
+                <ion-select-option *ngFor="let option of field.options" [value]="option">{{ option }}</ion-select-option>
+              </ion-select>
+              <ion-radio-group *ngSwitchCase="'radiobutton'" [(ngModel)]="formData[field.name]">
+                <ion-item *ngFor="let option of field.options">
+                  <ion-label>{{ option }}</ion-label>
+                  <ion-radio [value]="option"></ion-radio>
+                </ion-item>
+              </ion-radio-group>
+              <ion-input *ngSwitchCase="'document'" type="file" (change)="onFileChange($event, field.name)"></ion-input>
+              <ion-button *ngSwitchCase="'document'" (click)="capturePhoto(i)" shape="round">
+                <ion-icon slot="start" name="camera"></ion-icon>
+              </ion-button>
+              <!-- <ion-img [src]="field.get('photo')?.value" *ngIf="field.get('photo')?.value"></ion-img> -->
+              <ion-checkbox *ngSwitchCase="'checkbox'" [(ngModel)]="formData[field.name]"></ion-checkbox>
+            </ng-container>
+          </ion-item>
+        </ion-list>
+        <ion-button expand="block" color="primary" (click)="saveRequest()">Enviar</ion-button>
+        <ion-button (click)="clearLocalStorage()" expand="block" shape="round">
+          Limpiar LS
+        </ion-button>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-list>
+    <ion-item *ngFor="let request of requests">
+      {{ request.typeName }} - {{ request.id }}
+    </ion-item>
+  </ion-list>
+</ion-content>

@@ -25,3 +25,13 @@
 #container a {
   text-decoration: none;
 }
+
+.background-image {
+  --background: url('/assets/wallpaperApp.jpg') no-repeat center center / cover;
+}
+
+.content {
+  color: white;
+  text-align: center;
+  padding: 20px;
+}

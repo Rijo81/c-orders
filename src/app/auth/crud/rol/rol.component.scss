@@ -1,0 +1,40 @@
+ion-modal {
+  --width: 100%;
+  --max-width: 300px;
+  --height: 350px;
+  --border-radius: 16px;
+  --box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+ion-toolbar {
+  --background: #ffffff;
+  --color: #1f2937;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+ion-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+ion-item {
+  --background: transparent;
+  border: none;
+}
+
+ion-input,
+ion-select {
+  --background: #f9fafb;
+  border-radius: 8px;
+  padding: 8px;
+  font-size: 1rem;
+}
+
+ion-button[type="submit"] {
+  margin-top: 20px;
+  width: 100%;
+  --background: #3b82f6;
+  --border-radius: 8px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}

@@ -1,0 +1,21 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/received"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Detalle del Excusa</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content *ngIf="req">
+  <ion-card>
+    <img [src]="req.formData" />
+    <ion-card-header>
+      <ion-card-title>{{ req.typeName }}</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p><strong>Dirección:</strong> {{ req.group_destine.name }}</p>
+      <p><strong>Teléfono:</strong> {{ req.group_origin.name }}</p>
+    </ion-card-content>
+  </ion-card>
+</ion-content>
