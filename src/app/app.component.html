@@ -1,11 +1,26 @@
 <ion-app>
   <ion-split-pane contentId="main-content">
-    <ion-menu contentId="main-content" type="overlay">
+    <ion-menu *ngIf="showMenu" contentId="main-content" type="overlay">
       <ion-header>
-        <ion-toolbar color="tertiary">
+        <ion-toolbar color="tertiary" >
           <!-- <ion-title>Menu</ion-title> -->
-          <ion-list-header class="titleMenu">GSE</ion-list-header>
-          <ion-note class="subtitle">Gestion de Solicitudes</ion-note>
+          <ion-list-header style="color: white; font-size:x-large;">GSE</ion-list-header>
+          <ion-note style="color: white; font-weight: bold; font-family: Helvetica;">Gestion de Solicitudes</ion-note>
+          <ion-menu-toggle auto-hide="true">
+            <ion-button color="light" size="small" (click)="logout()">
+              <ion-icon name="log-out" slot="start"></ion-icon>
+              Cerrar sesión
+            </ion-button>
+            <!-- <ion-item button (click)="logout()" class="logout">
+              <ion-icon name="log-out" slot="start"></ion-icon>
+              <ion-label>Cerrar sesión</ion-label>
+            </ion-item> -->
+          </ion-menu-toggle>
+          <!-- <ion-button (click)="logout()" color="light" size="small">
+            <ion-icon slot="start" name="log-out"></ion-icon>
+            Cerrar Session
+          </ion-button> -->
+          <!-- <h3 (click)="logout()">Cerrar Session</h3> -->
           <ion-buttons slot="end">
             <ion-menu-button>
               <ion-icon name="close"></ion-icon>

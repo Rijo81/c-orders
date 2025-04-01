@@ -1,52 +1,31 @@
 import { Injectable } from '@angular/core';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { from, Observable } from 'rxjs';
+import { supabase } from 'src/app/core/supabase.client';
 import { Models } from 'src/app/models/models';
-import { environment } from 'src/environments/environment';
-// import { addDoc, collection, deleteDoc, doc, Firestore, getDocs, updateDoc } from '@angular/fire/firestore';
-// import { from, Observable } from 'rxjs';
-// import { Models } from 'src/app/models/models';
-
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
 
-  private supabase: SupabaseClient;
-
-  constructor() {
-    this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
-  }
-
   // Obtener todos los usuarios
-  getUsers(): Observable<Models.User.UsersI[]> {
+  getUsers(): Observable<Models.User.UserssI[]> {
     return from(this.fetchUsers());
-    //   this.supabase
-    //     .from('usersapp') // tu tabla debe llamarse 'users'
-    //     .select('*')
-    //     .then(({ data, error }) => {
-    //       console.log(data);
-
-    //       if (error) throw error;
-    //       return data as Models.User.UsersI[];
-    //     })
-    // );
   }
-  private async fetchUsers(): Promise<Models.User.UsersI[]> {
-    const { data, error } = await this.supabase
+  private async fetchUsers(): Promise<Models.User.UserssI[]> {
+    const { data, error } = await supabase
       .from('usersapp')  // Asegúrate que este es el nombre correcto
       .select('*');
 
     if (error) throw error;
 
     console.log('[Supabase] Data cargada:', data);
-    return data as Models.User.UsersI[];
+    return data as Models.User.UserssI[];
   }
 
   // Agregar usuario
-  addUser(user: Models.User.UsersI): Observable<void> {
+  addUser(user: Models.User.UserssI): Observable<void> {
     return from(
-      this.supabase
+      supabase
         .from('usersapp')
         .insert([user])
         .then(({ error }) => {
@@ -56,9 +35,9 @@ export class UserService {
   }
 
   // Editar usuario
-  updateUser(id: string, user: Partial<Models.User.UsersI>): Observable<void> {
+  updateUser(id: string, user: Partial<Models.User.UserssI>): Observable<void> {
     return from(
-      this.supabase
+      supabase
         .from('usersapp')
         .update(user)
         .eq('id', id)
@@ -71,7 +50,7 @@ export class UserService {
   // Eliminar usuario
   deleteUser(id: string): Observable<void> {
     return from(
-      this.supabase
+      supabase
         .from('usersapp')
         .delete()
         .eq('id', id)

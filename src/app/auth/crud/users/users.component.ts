@@ -13,9 +13,7 @@ import { GroupsI } from 'src/app/models/groups.models';
 import { GroupService } from 'src/app/services/crud/group.service';
 import { RolsService } from 'src/app/services/crud/rols.service';
 import { UserService } from 'src/app/services/crud/user.service';
-
-
-
+import { SupabaseService } from 'src/app/services/supabase/supabase.service';
 @Component({
   selector: 'app-users',
   templateUrl: './users.component.html',
@@ -27,14 +25,16 @@ import { UserService } from 'src/app/services/crud/user.service';
 })
 export class UsersComponent  implements OnInit {
 
-  users: Models.User.UsersI[] = [];
+  users: Models.User.UserssI[] = [];
   rols: RolsI[] = [];
   groups: GroupsI[] = [];
-  newUser: Models.User.UsersI = { name: '', email: '', rol: '', group_id: 0, photo: '' };
+  newUser: Models.User.UserssI = { name: '', email: '', password: '', rol: '', group_id: '' };
+  objectUsers = {name: '',  email: '', password: '', rol: '', group_id: ''};
+  photo: File | null = null
   isEditing = false;
   editingUserId: string | null = null;
   //BUSQUEDA // Lista original de usuarios
-  filteredUsers: Models.User.UsersI[] = []; // Lista filtrada de usuarios
+  filteredUsers: Models.User.UserssI[] = []; // Lista filtrada de usuarios
   searchForm!: FormGroup;
   selectedPhoto: File | null = null;
 
@@ -51,6 +51,7 @@ export class UsersComponent  implements OnInit {
   constructor(private userService: UserService,
               private groupService: GroupService,
               private rolService: RolsService,
+              private supabaseService: SupabaseService,
               private interactionService: InteractionService,
               ) {
     addIcons({trash,create,add});
@@ -71,12 +72,6 @@ export class UsersComponent  implements OnInit {
     });
     this.loadUsers();
     console.log(this.loadUsers());
-
-    //   this.userService.getUsers().subscribe(users => {
-    //   this.users = users;
-    //   this.filteredUsers = users; // Al inicio, la lista filtrada es igual a la original
-    // });
-
     // Detectar cambios en el campo de búsqueda y filtrar usuarios
     this.searchForm.get('search')?.valueChanges.subscribe(value => {
       this.filterUsers(value);
@@ -100,11 +95,6 @@ export class UsersComponent  implements OnInit {
       });
 
     return this.filteredUsers;
-    // query = query.toLowerCase(); // Convertir a minúsculas para búsqueda insensible a mayúsculas
-    // this.filteredUsers = this.users.filter(user =>
-    //   user.name.toLowerCase().includes(query) || // Filtra por nombre
-    //   user.email.toLowerCase().includes(query)   // Filtra por email
-    // );
   }
 
   openModalEdit() {
@@ -135,41 +125,47 @@ export class UsersComponent  implements OnInit {
     });
   }
 
-  getDefaultUsers(): Models.User.UsersI {
-    return { name: '', email: '', rol: '', group_id: 0, photo: '' };
-  }
- async addUser() {
-  if (this.newUser.name && this.newUser.email) {
-    await this.interactionService.showLoading('Procesando...');
-    this.userService.addUser(this.newUser).subscribe({
-      next: () => {
-        this.newUser = this.getDefaultUsers();
-        this.loadUsers();
-        this.modal.dismiss(this.newUser, 'confirm');
-        this.interactionService.showToast('Usuario creado con éxito');
-      },
-      error: (err) => {
-        this.interactionService.showToast('Error al agregar usuario');
-        console.error(err);
-      },
-      complete: () => this.interactionService.dismissLoading()
-    });
-  }
-    // if (this.newUser.name && this.newUser.email) {
-    //     await this.interactionService.showLoading('Procesando...')
-    //     this.userService.addUser(this.newUser).subscribe(() => {
-    //     this.newUser = this.getDefaultUsers();
-    //     this.loadUsers();
-    //   });
-    // }
-    // this.interactionService.dismissLoading();
-    // this.modal.dismiss(this.newUser, 'confirm');
-    // this.interactionService.showToast('Usuario creado con éxito');
-    // console.log('Agregado');
-
+  getDefaultUsers(): Models.User.UserssI {
+    return { name: '', email: '', password: '',  rol: '', group_id: '', photo: '' };
   }
 
-  editUser(user: Models.User.UsersI) {
+  uploadPhoto(event: any) {
+    this.photo = event.target.files[0];
+  }
+  async addUser() {
+    if (!this.photo) {
+      console.error("Selecciona una foto");
+      return;
+    }
+
+    try {
+      await this.supabaseService.signUp(this.newUser.name, this.newUser.email, this.newUser.password, this.newUser.rol, this.newUser.group_id, this.photo);
+      this.loadUsers();
+      console.log("Registro exitoso");
+    } catch (error) {
+      console.error(error);
+    }
+  }
+//  async addUser() {
+//   if (this.newUser.name && this.newUser.email) {
+//     await this.interactionService.showLoading('Procesando...');
+//     this.userService.addUser(this.newUser).subscribe({
+//       next: () => {
+//         this.newUser = this.getDefaultUsers();
+//         this.loadUsers();
+//         this.modal.dismiss(this.newUser, 'confirm');
+//         this.interactionService.showToast('Usuario creado con éxito');
+//       },
+//       error: (err) => {
+//         this.interactionService.showToast('Error al agregar usuario');
+//         console.error(err);
+//       },
+//       complete: () => this.interactionService.dismissLoading()
+//     });
+//   }
+//   }
+
+  editUser(user: Models.User.UserssI) {
     this.isEditing = true;
     this.editingUserId = user.id!;
     this.newUser = { ...user };
@@ -198,18 +194,6 @@ export class UsersComponent  implements OnInit {
         complete: () => this.interactionService.dismissLoading()
       });
     }
-    // if (this.editingUserId) {
-    //   await this.interactionService.showLoading('Actualizado...')
-    //   this.userService.updateUser(this.editingUserId, this.newUser).subscribe(() => {
-    //     this.isEditing = false;
-    //     this.editingUserId = null;
-    //     this.newUser = this.getDefaultUsers();
-    //     this.loadUsers();
-    //   });
-    // }
-    // this.interactionService.dismissLoading();
-    // this.modalEdit.dismiss(this.newUser, 'confirm');
-    // this.interactionService.showToast('Usuario actualizado');
   }
 
   async deleteUser(id: string) {
@@ -234,22 +218,5 @@ export class UsersComponent  implements OnInit {
         complete: () => this.interactionService.dismissLoading()
       });
     }
-    // const responseAlert = await this.interactionService.presentAlert('Eliminar Usuario',
-    //   `Esta seguro de eliminar el <strong>Usuario</strong>`,
-    // 'Cancelar');
-
-    // if( responseAlert){
-    //   try {
-    //     this.userService.deleteUser(id).subscribe(() => {
-    //       this.loadUsers();
-    //     });
-    //     this.interactionService.dismissLoading();
-    //     this.interactionService.showToast('Usuario eliminado');
-    //   }
-    //   catch(err){
-    //     this.interactionService.showToast('Error: ' + err);
-    //   }
-    // }
   }
-
 }

@@ -20,8 +20,12 @@ import {
   IonSelectOption,
   IonMenuButton,
 } from '@ionic/angular/standalone';
+import { delay, filter, retry, take, tap } from 'rxjs';
 import { GroupI, GroupsI } from 'src/app/models/groups.models';
 import { TypeRI } from 'src/app/models/requests.models';
+import { GroupService } from 'src/app/services/crud/group.service';
+import { InteractionService } from 'src/app/services/interaction.service';
+import { SupabaseService } from 'src/app/services/supabase/supabase.service';
 import { TRequestsService } from 'src/app/services/type-requests/t-requests.service';
 
 @Component({
@@ -59,7 +63,11 @@ export class TyperequestsComponent  implements OnInit {
     groups: GroupsI[] = [];
 
     constructor(private fb: FormBuilder,
-      private typeService: TRequestsService
+      private typeService: TRequestsService,
+      private interactionService: InteractionService,
+      private groupService: GroupService,
+      private authSupabaseService: SupabaseService
+
     ) {
       // Inicialización del formulario reactivo
       this.typeRequestForm = this.fb.group({
@@ -71,14 +79,35 @@ export class TyperequestsComponent  implements OnInit {
       this.loadTypeRequests();
     }
 
-    ngOnInit() {
-      const savedGroups = localStorage.getItem('groups');
-
-      if (savedGroups) {
-        this.groups = JSON.parse(savedGroups);
-      }
+   ngOnInit() {
+    this.authSupabaseService.sessionChanged
+        .pipe(
+          filter(session => !!session),        // Espera a que la sesión esté lista
+          take(1),                              // Solo la primera vez
+          tap(() => console.log('Sesión lista')),
+          delay(100),                           // Le das un respiro por si Supabase se toma su tiempo
+          retry({ count: 3, delay: 1000 })      // Si falla, reintenta hasta 3 veces
+        )
+        .subscribe(() => {
+          this.loadTypeRequests();
+          this.loadGroup();
+        });
     }
 
+   loadGroup() {
+    console.log('Estamos a dentro del metodo');
+
+       this.groupService.getGroups().subscribe({
+        next: (group) => {
+          console.log(group);
+          this.groups = group;
+        },
+        error: (err) => {
+          console.error("Error al cargar grupos:", err);
+          this.interactionService.showToast('Error al cargar grupos.');
+        }
+      });
+    }
     // Getter para el array de campos
     get fields(): FormArray {
       return this.typeRequestForm.get('fields') as FormArray;
@@ -150,45 +179,40 @@ export class TyperequestsComponent  implements OnInit {
     // Guardar el tipo de solicitud
 
     addTypeRequest() {
-      console.log('saveTypeRequest: ', this.typeRequestForm);
-
       if (this.typeRequestForm.invalid) {
         alert('Por favor complete todos los campos obligatorios.');
         return;
       }
 
       const newTypeRequest: TypeRI = {
-        id: Date.now(),
         ...this.typeRequestForm.value,
+        created_at: new Date().toISOString() // opcional, si tu tabla lo requiere
       };
-      console.log(newTypeRequest);
 
-      // Verificar unicidad de nombres de campos
-      const fieldNames = newTypeRequest.fields.map(
-        (field) => field.name?.trim() || ''
-      );
-      console.log('ver valores: ', fieldNames);
-
+      // Validar nombres únicos
+      const fieldNames = newTypeRequest.fields.map(f => f.name?.trim() || '');
       if (new Set(fieldNames).size !== fieldNames.length) {
         alert('Los nombres de los campos deben ser únicos.');
         return;
       }
-      this.typeService.addTypeRequests(newTypeRequest);
-      this.typeRequests.push(newTypeRequest);
-      //this.saveToLocalStorage();
-      this.typeRequestForm.reset();
-      this.fields.clear();
-    }
 
-    // Cargar tipos de solicitudes desde LocalStorage
+      this.typeService.addTypeRequests(newTypeRequest).subscribe({
+        next: () => {
+          this.typeRequests.push(newTypeRequest);
+          this.typeRequestForm.reset();
+          this.fields.clear();
+          this.loadTypeRequests();
+        },
+        error: (err) => {
+          console.error('Error al guardar:', err);
+          alert('Error al guardar tipo de solicitud.');
+        }
+      });
+    }
+       // Cargar tipos de solicitudes desde LocalStorage
     loadTypeRequests() {
       this.typeService.getTypeRequests().subscribe(type => {
         this.typeRequests = type;
       });
     }
-    // // Guardar tipos de solicitudes en LocalStorage
-    // saveToLocalStorage() {
-    //   localStorage.setItem('requestTypes', JSON.stringify(this.typeRequests));
-    // }
-
 }

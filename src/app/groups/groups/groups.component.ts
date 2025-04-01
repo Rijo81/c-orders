@@ -2,30 +2,37 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonHeader, IonToolbar, IonTitle, IonButtons, IonContent, IonLabel, IonModal, IonButton, IonItem,
-  IonInput, IonSearchbar, IonList, IonIcon, IonFab, IonFabButton, IonMenuButton, IonSelectOption, IonSelect } from "@ionic/angular/standalone";
+  IonInput, IonSearchbar, IonList, IonIcon, IonFab, IonFabButton, IonMenuButton, IonSelectOption, IonSelect,
+  IonCheckbox } from "@ionic/angular/standalone";
 import { addIcons } from 'ionicons';
 import { add, create, trash } from 'ionicons/icons';
 import { GroupsI } from 'src/app/models/groups.models';
 import { GroupService } from 'src/app/services/crud/group.service';
 import { InteractionService } from 'src/app/services/interaction.service';
-import { CrudGroupsService } from 'src/app/services/supabase/crud-groups.service';
-import { IonicModule } from '@ionic/angular';
-
 @Component({
   selector: 'app-groups',
   templateUrl: './groups.component.html',
   styleUrls: ['./groups.component.scss'],
   standalone: true,
-  imports: [IonFabButton, IonFab, IonIcon, IonList, IonSearchbar, IonInput, IonItem, IonButton, IonModal,
+  imports: [ IonFabButton, IonFab, IonIcon, IonList, IonSearchbar, IonInput, IonItem, IonButton, IonModal,
     IonLabel, IonContent, IonButtons, IonTitle, IonToolbar, IonHeader, IonMenuButton, ReactiveFormsModule,
-    FormsModule, IonSelectOption, CommonModule, IonSelect ]
+    FormsModule, IonSelectOption, CommonModule, IonSelect, IonCheckbox ]
 })
 export class GroupsComponent  implements OnInit {
 
 
   groups: GroupsI[] = [];
   filteredGroups: GroupsI[] = [];
-  newGroup: GroupsI = { name: '', parentId: '' };
+  newGroup: GroupsI = {
+    name: '',
+    parentid: '',
+    permition_states: false,
+    permition_groups: false,
+    permition_users: false,
+    permition_typerequests: false,
+    permition_requests: false,
+    permition_viewsolic: false
+   };
   isEditing = false;
   editingGroupId: string | null = null;
   selectedGroup: string = '';
@@ -46,7 +53,9 @@ export class GroupsComponent  implements OnInit {
       search: new FormControl('')
     });
 
-    this.loadGroup();
+    this.groupService.getGroups().subscribe(group => {
+      this.groups = group;
+    });
 
     this.searchForm.get('search')?.valueChanges.subscribe(value => {
       this.filterGroup(value);
@@ -101,7 +110,7 @@ export class GroupsComponent  implements OnInit {
       this.interactionService.showToast('El nombre es obligatorio');
       return;
     }
-    this.newGroup.parentId = this.selectedGroup;
+    this.newGroup.parentid = this.selectedGroup;
     await this.interactionService.showLoading('Guardando...');
     this.groupService.addGroup(this.newGroup).subscribe({
       next: () => {
@@ -140,7 +149,7 @@ export class GroupsComponent  implements OnInit {
       next: () => {
         this.isEditing = false;
         this.editingGroupId = null;
-        this.newGroup = { name: '', parentId: this.selectedGroup };
+        this.newGroup = { name: '', parentid: this.selectedGroup };
         this.loadGroup();
         this.interactionService.dismissLoading();
         this.modalEdit.dismiss(null, 'confirm');
@@ -177,146 +186,4 @@ export class GroupsComponent  implements OnInit {
       }
     });
   }
-    //   groups: GroupsI[] = [];
-    //   newGroup:  GroupsI = { name: '', parentId: '' };
-    //   isEditing = false;
-    //   editingGroupId: string | null = null;
-    //   selectedGroup: string = '';
-
-    //   //BUSQUEDA // Lista original de usuarios
-    //   filteredGroups: GroupsI[] = []; // Lista filtrada de usuarios
-    //   searchForm!: FormGroup;
-
-
-    //   @ViewChild('modalCreate') modal!: IonModal;
-    //   @ViewChild('modalUpdate') modalEdit!: IonModal;
-
-
-    //   constructor(//private groupService: GroupService,
-    //               private groupService: GroupService,
-    //               private interactionService: InteractionService,
-    //               ) {
-    //     addIcons({ trash, create, add });
-    //   }
-
-    //   ngOnInit() {
-
-    //     this.searchForm = new FormGroup({
-    //       search: new FormControl('')
-    //     });
-    //     this.loadGroup();
-    //       this.groupService.getGroups().subscribe(group => {
-    //       //this.groupService.getGroups();
-    //       this.groups = group;
-    //       this.filteredGroups = group; // Al inicio, la lista filtrada es igual a la original
-
-    //       });
-    //     // Detectar cambios en el campo de búsqueda y filtrar usuarios
-    //     this.searchForm.get('search')?.valueChanges.subscribe(value => {
-    //       this.filterGroup(value);
-    //       console.log(value);
-    //       console.log(this.filterGroup(value));
-
-    //     });
-    //   }
-    //   // Función para filtrar los usuarios
-    //   filterGroup(searchTerm: string) {
-    //     console.log('Dentro del metodo: ', searchTerm);
-
-    //     if (!searchTerm) return [];
-
-    //     const lowerCaseSearch = searchTerm.toLowerCase();
-    //       this.filteredGroups = this.groups.filter(group =>{
-    //         group.name.toLowerCase().includes(lowerCaseSearch)
-    //       });
-
-    //     return this.filteredGroups;
-    //     // query = query.toLowerCase(); // Convertir a minúsculas para búsqueda insensible a mayúsculas
-    //     // this.filteredUsers = this.users.filter(user =>
-    //     //   user.name.toLowerCase().includes(query) || // Filtra por nombre
-    //     //   user.email.toLowerCase().includes(query)   // Filtra por email
-    //     // );
-    //   }
-
-    //   openModalEdit() {
-    //     this.modalEdit.present(); // Muestra el primer modal
-    //   }
-
-    //   openModalCreate() {
-    //     this.modal.present(); // Muestra el primer modal
-    //   }
-
-    //   cancelModalCreate() {
-    //     this.modal.dismiss(null, 'cancel');
-    //   }
-    //   cancelModalUpdate() {
-    //     this.modalEdit.dismiss(null, 'cancel');
-    //   }
-
-    //   loadGroup() {
-    //     //this.groupService.getGroups().subscribe(group => {
-    //     this.groupService.getGroups().subscribe(group => {
-    //       this.groups = group;
-    //     });
-    //   }
-    //  async addGroup() {
-    //     if (this.newGroup.name) {
-    //         await this.interactionService.showLoading('Procesando...');
-    //         this.groupService.addGroup(this.newGroup).subscribe(() => {
-    //         //this.groupService.addGroup(this.newGroup);
-    //         this.newGroup = { name: '', parentId: this.selectedGroup };
-    //         this.loadGroup();
-    //         });
-    //     }
-    //     this.interactionService.dismissLoading();
-    //     this.modal.dismiss(this.newGroup, 'confirm');
-    //     this.interactionService.showToast('Grupo creado con éxito');
-    //     console.log('Agregado');
-    //   }
-
-    //   editGroup(group: GroupsI) {
-    //     this.isEditing = true;
-    //     this.editingGroupId = group.id!;
-    //     this.newGroup = { ...group };
-    //     console.log('estamos dentro', this.newGroup);
-    //     this.modalEdit.present();
-
-    //   }
-
-    //   async updateGroup() {
-    //     if (this.editingGroupId) {
-    //       await this.interactionService.showLoading('Actualizado...')
-    //       this.groupService.updateGroup(this.editingGroupId, this.newGroup).subscribe(() => {
-    //       // this.groupService.updateGroup(this.editingGroupId, this.newGroup).then(() => {
-    //           this.isEditing = false;
-    //         this.isEditing = false;
-    //         this.editingGroupId = null;
-    //         this.newGroup = { name: '', parentId:  this.selectedGroup };
-    //         this.loadGroup();
-    //       });
-    //     }
-    //     this.interactionService.dismissLoading();
-    //     this.modalEdit.dismiss(this.newGroup, 'confirm');
-    //     this.interactionService.showToast('Estado actualizado');
-    //   }
-
-    //   async deleteGroup(id: string) {
-    //     const responseAlert = await this.interactionService.presentAlert('Eliminar Usuario',
-    //       `Esta seguro de eliminar el <strong>Usuario</strong>`,
-    //     'Cancelar');
-
-    //     if( responseAlert){
-    //       try {
-    //         this.groupService.deleteGroup(id).subscribe(() => {
-    //         //this.groupService.deleteGroup(id).then(() => {
-    //           this.loadGroup();
-    //         });
-    //         this.interactionService.dismissLoading();
-    //         this.interactionService.showToast('Usuario eliminado');
-    //       }
-    //       catch(err){
-    //         this.interactionService.showToast('Error: ' + err);
-    //       }
-    //     }
-    //   }
 }

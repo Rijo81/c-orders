@@ -1,21 +1,42 @@
 <ion-header>
   <ion-toolbar>
+    <ion-title>Excusas Recibidas</ion-title>
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/received"></ion-back-button>
+      <ion-menu-button></ion-menu-button>
     </ion-buttons>
-    <ion-title>Detalle del Excusa</ion-title>
   </ion-toolbar>
 </ion-header>
-
-<ion-content *ngIf="req">
-  <ion-card>
-    <img [src]="req.formData" />
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-label>
+    <h1 class="sub-title">Excusas de Estudiantes</h1>
+  </ion-label>
+  <h1>HOLA</h1>
+  <ion-card *ngFor="let request of filteredRequests">
     <ion-card-header>
-      <ion-card-title>{{ req.typeName }}</ion-card-title>
+      <ion-card-title>{{ request.typeName }}</ion-card-title>
+      <ion-card-subtitle>
+        <strong>De:</strong> {{ request.group_origin.name }} |
+        <strong>Para:</strong> {{ request.group_destine.name }}
+      </ion-card-subtitle>
     </ion-card-header>
     <ion-card-content>
-      <p><strong>Dirección:</strong> {{ req.group_destine.name }}</p>
-      <p><strong>Teléfono:</strong> {{ req.group_origin.name }}</p>
+      <!-- (click)="goViewRequests(request)" -->
+      <ul  class="borderlist">
+        <!-- Mostrar formData dinámicamente -->
+         @for (key of objectKeys(request.formData); track $index) {
+           <li class="stylemagin" >
+             <strong>{{ key }}:</strong>
+              <ng-container *ngIf="isImage(request.formData[key]); else nonImageContent">
+                <ion-img [src]="request.formData[key]" alt="{{ key }}" class="image-size"></ion-img>
+              </ng-container>
+             <ng-template #nonImageContent>
+               @if (isStringOrNumber(request.formData[key])) {
+                 <span> {{ request.formData[key] }}</span>
+               }
+             </ng-template>
+           </li>
+         }
+      </ul>
     </ion-card-content>
   </ion-card>
 </ion-content>

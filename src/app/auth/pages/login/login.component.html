@@ -1,31 +1,29 @@
 <ion-header>
   <ion-toolbar>
     <ion-title>Login</ion-title>
-    <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button>
-    </ion-buttons>
   </ion-toolbar>
 </ion-header>
-<ion-content>
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title>Iniciar Sesión</ion-card-title>
-    </ion-card-header>
 
-    <ion-card-content>
-      <ion-input [(ngModel)]="email" type="email" placeholder="Correo Electrónico"></ion-input>
-      <ion-input [(ngModel)]="password" type="password" placeholder="Contraseña"></ion-input>
-      <ion-item>
-        <ion-label>Foto de Perfil</ion-label>
-        <input type="file" (change)="onFileSelected($event)">
-      </ion-item>
-      <ion-button expand="full" (click)="login()">Ingresar</ion-button>
-      <ion-button expand="full" (click)="register()">Registrarse</ion-button>
-    </ion-card-content>
-    <div *ngIf="profilePicUrl">
-      <h2>Foto de Perfil</h2>
-      <img [src]="profilePicUrl" alt="Perfil" class="profile-pic">
-      <ion-button expand="full" color="danger" (click)="logout()">Cerrar Sesión</ion-button>
-    </div>
-  </ion-card>
+<ion-content class="ion-padding">
+  <form [formGroup]="loginForm" (submit)="login()" >
+    <ion-item>
+      <ion-label position="floating">Email</ion-label>
+      <ion-input type="email" formControlName="email" name="email" required></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="floating">Password</ion-label>
+      <ion-input type="password" formControlName="password" name="password" required></ion-input>
+    </ion-item>
+    <ion-item lines="none">
+      <ion-label>Recordar credenciales</ion-label>
+      <ion-toggle formControlName="rememberMe" name="toggle"></ion-toggle>
+    </ion-item>
+
+    <ion-button expand="full" type="submit" [disabled]="loginForm.invalid" >Iniciar Sesión</ion-button>
+
+    <ion-item>
+      <ion-label>{{error}}</ion-label>
+    </ion-item>
+  </form>
 </ion-content>

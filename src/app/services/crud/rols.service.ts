@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { from, Observable } from 'rxjs';
 import { RolsI } from 'src/app/models/rols.models';
-import { environment } from 'src/environments/environment';
+import { supabase } from 'src/app/core/supabase.client';
+
 // import { addDoc, collection, deleteDoc, doc, Firestore, getDocs, updateDoc } from '@angular/fire/firestore';
 // import { from, Observable } from 'rxjs';
 // import { RolsI } from 'src/app/models/rols.models';
@@ -12,16 +12,10 @@ import { environment } from 'src/environments/environment';
 })
 export class RolsService {
 
-  private supabase: SupabaseClient;
-
-  constructor() {
-    this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
-  }
-
   // Obtener todos los roles
   getRols(): Observable<RolsI[]> {
     return from(
-      this.supabase.from('rols').select('*').then(({ data, error }) => {
+      supabase.from('rols').select('*').then(({ data, error }) => {
         if (error) throw error;
         return data as RolsI[];
       })
@@ -31,7 +25,7 @@ export class RolsService {
   // Agregar rol
   addRol(rol: RolsI): Observable<any> {
     return from(
-      this.supabase.from('rols').insert([rol]).then(({ error }) => {
+      supabase.from('rols').insert([rol]).then(({ error }) => {
         if (error) throw error;
       })
     );
@@ -40,7 +34,7 @@ export class RolsService {
   // Editar rol
   updateRol(id: string, rol: Partial<RolsI>): Observable<any> {
     return from(
-      this.supabase.from('rols').update(rol).eq('id', id).then(({ error }) => {
+     supabase.from('rols').update(rol).eq('id', id).then(({ error }) => {
         if (error) throw error;
       })
     );
@@ -49,7 +43,7 @@ export class RolsService {
   // Eliminar rol
   deleteRol(id: string): Observable<any> {
     return from(
-      this.supabase.from('rols').delete().eq('id', id).then(({ error }) => {
+      supabase.from('rols').delete().eq('id', id).then(({ error }) => {
         if (error) throw error;
       })
     );

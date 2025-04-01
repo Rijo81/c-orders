@@ -19,16 +19,24 @@
     <ion-item>
       <ion-label>Rol</ion-label>
       <ion-select [(ngModel)]="rol" name="rol" required>
-        <ion-select-option value="admin">Admin</ion-select-option>
-        <ion-select-option value="user">User</ion-select-option>
+        <ion-select-option
+                *ngFor="let rol of rols"
+                [value]="rol.id"
+              >
+                {{ rol.name }}
+              </ion-select-option>
       </ion-select>
     </ion-item>
 
     <ion-item>
       <ion-label>Grupo</ion-label>
-      <ion-select [(ngModel)]="group_id" name="group_id" required>
-        <ion-select-option value="1">Grupo 1</ion-select-option>
-        <ion-select-option value="2">Grupo 2</ion-select-option>
+      <ion-select [(ngModel)]="group_id" name="group_id" placeholder="Seleccione el grupo" required>
+        <ion-select-option
+                *ngFor="let group of groups"
+                [value]="group.id"
+              >
+                {{ group.name }}
+              </ion-select-option>
       </ion-select>
     </ion-item>
 

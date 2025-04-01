@@ -105,14 +105,19 @@
           </ion-item>
 
           <ion-item>
+            <ion-label position="floating">Password</ion-label>
+            <ion-input type="password" [(ngModel)]="newUser.password" name="password" required></ion-input>
+          </ion-item>
+
+          <ion-item>
             <ion-label>Foto</ion-label>
             <input
               type="file"
-              (change)="onFileSelected($event)"
+              (change)="uploadPhoto($event)"
               accept="image/*"
             />
           </ion-item>
-
+          <!-- (change)="onFileSelected($event)" -->
           <ion-button expand="full" type="submit" [disabled]="!formCreate.form.valid">
             Crear Usuario
           </ion-button>
@@ -189,91 +194,3 @@
     </ng-template>
   </ion-modal>
 </ion-content>
-
-
-
-
-
-<!-- <ion-header>
-  <ion-toolbar>
-    <ion-title>Usuarios</ion-title>
-    <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content [fullscreen]="true" class="ion-padding">
-
-  <ion-label>
-    <h1 class="sub-title">Gestión de Usuarios</h1>
-  </ion-label>
-    <ion-modal #modalCreate>
-      <ng-template>
-        <ion-header>
-          <ion-toolbar>
-            <ion-buttons slot="start">
-              <ion-button (click)="cancelModalCreate()">Cancel</ion-button>
-            </ion-buttons>
-            <ion-title>Crear Usuario</ion-title>
-          </ion-toolbar>
-        </ion-header>
-        <ion-content class="ion-padding">
-          <ion-item>
-            <form trigger="form-create"  (submit)="isEditing ? updateUser() : addUser()">
-                <input type="text" [(ngModel)]="newUser.name" placeholder="Nombre" name="name" required>
-
-                <input type="email" [(ngModel)]="newUser.email" placeholder="Email" name="email" required>
-                <button type="submit">{{ isEditing ? 'Actualizar' : 'Agregar' }}</button>
-              </form>
-              <hr>
-          </ion-item>
-        </ion-content>
-      </ng-template>
-    </ion-modal>
-
-    <ion-modal #modalUpdate>
-      <ng-template>
-        <ion-header>
-          <ion-toolbar>
-            <ion-buttons slot="start">
-              <ion-button (click)="cancelModalUpdate()">Cancel</ion-button>
-            </ion-buttons>
-            <ion-title>Crear Usuario</ion-title>
-          </ion-toolbar>
-        </ion-header>
-        <ion-content class="ion-padding">
-          <ion-item>
-            <form trigger="form-create"  (submit)="isEditing ? updateUser() : addUser()">
-                <ion-input type="text" [(ngModel)]="newUser.name" placeholder="Nombre" name="name" required></ion-input>
-                <ion-input type="email" [(ngModel)]="newUser.email" placeholder="Correo Electronico" name="email" required></ion-input>
-                <button type="submit">{{ isEditing ? 'Actualizar' : 'Agregar' }}</button>
-              </form>
-
-          </ion-item>
-        </ion-content>
-      </ng-template>
-    </ion-modal>
-
-  <form [formGroup]="searchForm">
-      <ion-searchbar formControlName="search" placeholder="Buscar usuario" ></ion-searchbar>
-  </form>
-   <ion-list>
-        @for (user of users; track $index) {
-          <ion-item>
-            <ion-label>
-              <h3>{{user.name}}</h3>
-              <h3>{{user.email}}</h3>
-
-            </ion-label>
-            <ion-icon slot="end" name="trash" style="color: red;" (click)="deleteUser(user.id)"></ion-icon>
-            <ion-icon slot="end" name="create" style="color: green;"(click)="editUser(user)"></ion-icon>
-          </ion-item>
-        }
-    </ion-list>
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button (click)="openModalCreate()">
-      <ion-icon name="add"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
-</ion-content> -->

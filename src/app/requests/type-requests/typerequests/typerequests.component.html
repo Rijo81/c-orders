@@ -30,7 +30,7 @@
               <ion-label>Grupo Origen</ion-label>
               <ion-select formControlName="group_origin" placeholder="Seleccione Origen">
                 @for (group of groups; track $index) {
-                  <ion-select-option [value]="group">
+                  <ion-select-option [value]="group.id">
                     {{ group.name }}
                   </ion-select-option>
                 }
@@ -43,12 +43,13 @@
               <ion-label>Grupo Destino</ion-label>
               <ion-select formControlName="group_destine" placeholder="Seleccione Destino">
                 @for (group of groups; track $index) {
-                  <ion-select-option [value]="group">
+                  <ion-select-option [value]="group.id">
                     {{ group.name }}
                   </ion-select-option>
                 }
               </ion-select>
             </ion-item>
+            <p>HOLA</p>
 
           <!-- Campos dinámicos -->
           <ion-list formArrayName="fields">

@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { from, Observable } from 'rxjs';
+import { supabase } from 'src/app/core/supabase.client';
 import { GroupsI } from 'src/app/models/groups.models';
-import { environment } from 'src/environments/environment';
 // import { addDoc, collection, deleteDoc, doc, Firestore, getDocs, updateDoc } from '@angular/fire/firestore';
 // import { from, Observable } from 'rxjs';
 // import { GroupsI } from 'src/app/models/groups.models';
@@ -12,16 +11,10 @@ import { environment } from 'src/environments/environment';
 })
 export class GroupService {
 
-  private supabase: SupabaseClient;
-
-  constructor() {
-    this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
-  }
-
   // Obtener todos los grupos
   getGroups(): Observable<GroupsI[]> {
     return from(
-      this.supabase
+      supabase
         .from('groups')
         .select('*')
         .order('name', { ascending: true }) // opcional
@@ -35,9 +28,9 @@ export class GroupService {
   // Agregar grupo
   addGroup(group: GroupsI): Observable<any> {
     return from(
-      this.supabase
+      supabase
         .from('groups')
-        .insert([{ name: group.name, parentid: group.parentId || null }])
+        .insert([group])
         .then(({ error }) => {
           if (error) throw error;
         })
@@ -47,20 +40,20 @@ export class GroupService {
   // Actualizar grupo
   updateGroup(id: string, group: Partial<GroupsI>): Observable<any> {
     return from(
-      this.supabase
+      supabase
         .from('groups')
-        .update({ name: group.name, parentid: group.parentId || null })
+        .update(group)
         .eq('id', id)
         .then(({ error }) => {
           if (error) throw error;
         })
     );
   }
-
+  // { name: group.name, parentid: group.parentId || null }
   // Eliminar grupo
   deleteGroup(id: string): Observable<any> {
     return from(
-      this.supabase
+      supabase
         .from('groups')
         .delete()
         .eq('id', id)
