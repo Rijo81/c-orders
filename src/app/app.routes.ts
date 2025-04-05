@@ -35,6 +35,12 @@ export const routes: Routes = [
     // canMatch: [AuthGuard]
   },
   {
+    path: 'state-requests',
+    canActivate: [AuthGuard],
+    loadComponent: () => import('./requests/requests/states-requests/states-requests.component').then(statereq => statereq.StatesRequestsComponent),
+    // canMatch: [AuthGuard]
+  },
+  {
     path: 'requestsfire',
     canActivate: [AuthGuard],
     loadComponent: () => import('./requests/requests/requests.component').then(m => m.RequestsComponent),
@@ -51,6 +57,11 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
     loadComponent: () => import('./requests/viewreceived/viewreceived.component').then(m => m.ViewreceivedComponent),
     // canMatch: [AuthGuard]
+  },
+  {
+    path: 'details/:id',
+    canActivate: [AuthGuard],
+    loadComponent: () => import('./requests/detail-requests/detail-requests.component').then(detail => detail.DetailRequestsComponent),
   },
 
   {

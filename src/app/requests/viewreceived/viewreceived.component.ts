@@ -53,8 +53,6 @@ export class ViewreceivedComponent  implements OnInit {
       )
       .subscribe( async () => {
         this.initializeRequestsView();
-        await this.loadGroup();
-        await this.loadRequests();
         console.log('📦 Todas las solicitudes obtenidas:', this.requests);
       });
   }
@@ -77,8 +75,8 @@ export class ViewreceivedComponent  implements OnInit {
       this.groups = groups;
       this.requests = requests;
 
-      const userGroupId = this.selectedUser.group_id.id;
-      const groupHierarchy = this.getAllRelatedGroups(userGroupId, this.groups);
+      const userGroupId = this.selectedUser.group_id;
+      const groupHierarchy = this.getAllRelatedGroups(userGroupId.id, this.groups);
 
       console.log('📚 Grupos cargados:', this.groups);
       console.log('🧭 Jerarquía de grupos del usuario:', groupHierarchy);
@@ -92,39 +90,6 @@ export class ViewreceivedComponent  implements OnInit {
       this.interactionService.showToast('Error al cargar datos.');
     }
   }
-     async loadGroup(): Promise<void> {
-      return new Promise((resolve, reject) => {
-        this.groupService.getGroups().subscribe({
-          next: (group) => {
-            this.groups = group;
-            console.log('📚 Grupos cargados:', group);
-            resolve();
-          },
-          error: (err) => {
-            console.error("Error al cargar grupos:", err);
-            this.interactionService.showToast('Error al cargar grupos.');
-            reject(err);
-          }
-        });
-      });
-    }
-
-    async loadRequests(): Promise<void> {
-      return new Promise((resolve, reject) => {
-        this.requestsService.getRequests().subscribe({
-          next: (req) => {
-            this.requests = req;
-            console.log('📥 Solicitudes cargadas REQUESTS:', req);
-            resolve();
-          },
-          error: (err) => {
-            console.error("Error al cargar solicitudes:", err);
-            this.interactionService.showToast('Error al cargar solicitudes.');
-            reject(err);
-          }
-        });
-      });
-    }
 
   getAllRelatedGroups(groupId: string, groups: GroupsI[]): string[] {
     const related = new Set<string>();
@@ -133,12 +98,12 @@ export class ViewreceivedComponent  implements OnInit {
     let current = groups.find(g => g.id === groupId);
     while (current) {
       related.add(current.id);
-      current = groups.find(g => g.id === current.parentid);
+      current = groups.find(g => g.id === current.parentId);
     }
 
   // Bajar en la jerarquía recursivamente
   const collectChildren = (parentId: string) => {
-    const children = groups.filter(g => g.parentid === parentId);
+    const children = groups.filter(g => g.parentId === parentId);
     for (const child of children) {
       if (!related.has(child.id)) {
         related.add(child.id);
@@ -158,5 +123,9 @@ export class ViewreceivedComponent  implements OnInit {
 
   isStringOrNumber(value: any): boolean {
     return typeof value === 'string' || typeof value === 'number';
+  }
+
+  goToDetails(id: string) {
+    this.router.navigate(['/details', id]);
   }
 }

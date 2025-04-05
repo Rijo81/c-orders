@@ -1,57 +1,38 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { IonApp, IonRouterOutlet, IonSplitPane, IonHeader, IonToolbar, IonNote, IonButtons, IonListHeader,
-  IonContent, IonList, IonItem, IonLabel, IonIcon, IonMenuButton, IonMenu, IonMenuToggle, IonButton } from '@ionic/angular/standalone';
+  IonContent, IonList, IonItem, IonLabel, IonIcon, IonMenuButton, IonMenu, IonMenuToggle, IonButton, IonTitle, IonBadge, IonAvatar } from '@ionic/angular/standalone';
   import { addIcons } from 'ionicons';
  import * as all from 'ionicons/icons';
 import { SupabaseService } from './services/supabase/supabase.service';
-import { MenuController } from '@ionic/angular';
+import { MenuController, AlertController } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
-import { Models } from './models/models';
-import { RolsI } from './models/rols.models';
 import { GroupsI } from './models/groups.models';
+import { interval, Subscription } from 'rxjs';
+import { NotificationappService } from './services/supabase/notification/notificationapp.service';
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
   standalone: true,
-  imports: [IonButton, IonIcon, IonLabel, IonItem, IonList, IonContent, IonListHeader, IonButtons, IonNote, IonToolbar,
+  imports: [IonAvatar, IonBadge, IonTitle, IonButton, IonIcon, IonLabel, IonItem, IonList, IonContent, IonListHeader, IonButtons, IonNote, IonToolbar,
     IonHeader, IonSplitPane, IonApp, IonRouterOutlet, IonMenu, IonMenuButton, IonMenuToggle, RouterLink,
   CommonModule ],
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
 
   showMenu: boolean = true;
-  selectedUser: Models.User.UsersI | null = null;
-  appsPages: any[] = [];
-
-  // public fullMenu = [
-  //   { title: 'Inicio', url: '/home', icon: 'home', permission: '' },
-  //   { title: 'Estados', url: '/state', icon: 'list', permission: 'permition_states' },
-  //   { title: 'Grupos', url: '/group', icon: 'grid', permission: 'permition_groups' },
-  //   { title: 'Tipos Solicitudes', url: '/trequests', icon: 'keypad', permission: 'permition_typerequests' },
-  //   { title: 'Solicitudes', url: '/requestsfire', icon: 'send', permission: 'permition_requests' },
-  //   { title: 'Usuarios', url: '/user-supabase', icon: 'people', permission: 'permition_users' },
-  //   { title: 'Ver Solicitudes', url: '/view-excuse', icon: 'eye', permission: 'permition_viewsolic' },
-  //   { title: 'Register Supabase', url: '/register-supabase', icon: 'people-circle', permission: '' }
-  // ];
-
-  // public appPages: any[] = [];
-
-    public appPages = [
-    {title: 'Inicio', url: '/home', icon: 'home'},
-    {title: 'Estados', url: '/state', icon: 'list'},
-    {title: 'Grupos', url: '/group', icon: 'grid'},
-    {title: 'Tipos Solicitudes', url: '/trequests', icon: 'keypad'},
-    {title: 'Solicitudes', url: '/requestsfire', icon: 'send'},
-    {title: 'Usuarios', url: '/user-supabase', icon: 'people'},
-    {title: 'Ver Solicitudes', url: '/view-excuse', icon: 'eye'},
-    {title: 'Register Supabase', url: '/register-supabase', icon: 'people-circle'},
-  ];
+  private refreshSub!: Subscription;
+  private refreshCount: number = 0;
+  private maxAttempts: number = 100;
+  public appPages: any[] = [];
+  public notificationCount = 0;
 
   constructor(
     private authSupabaseService: SupabaseService,
     private router: Router,
-    private menuCtrl:  MenuController) {
+    private menuCtrl:  MenuController,
+    private alertController: AlertController,
+    private notificationService: NotificationappService) {
     addIcons(all);
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
@@ -65,74 +46,93 @@ export class AppComponent implements OnInit {
       }
     });
   }
-  async ngOnInit() {
-    console.log('ngOnInit');
-    // const user = await this.authSupabaseService.getUserAppDataRol(); // debe incluir el group
-    // const group: GroupsI = user?.group_id;
+  private async loadMenu() {
+    this.refreshSub = interval(1000).subscribe(async () => {
+      this.refreshCount++;
 
-    // console.log('Grupo del Usuario: ', group);
-    // if (!group) {
-    //   this.appPages = this.fullMenu.filter(item => !item.permission); // Solo los públicos
-    //   return;
-    // }
+      const user = await this.authSupabaseService.getUserAppData();
 
-    // this.appPages = this.fullMenu.filter(item => {
-    //   return !item.permission || group[item.permission as keyof GroupsI];
-    // });
+      if (user && user.group_id) {
+        const group = user.group_id;
 
+        this.appPages = this.getMenuForGroup(group);
+
+        console.log('🎯 Menú actualizado para el grupo:', group.name);
+
+        // 🔁 ¡Detenemos la verificación!
+        this.refreshSub.unsubscribe();
+      } else if (this.refreshCount >= this.maxAttempts) {
+        console.warn('⛔ Se alcanzó el límite de intentos de refresco sin encontrar usuario.');
+        this.refreshSub.unsubscribe(); // 🔒 Stop si pasamos el máximo de intentos
+        this.showReloadAlert();
+      } else {
+        console.log(`🔄 Intento ${this.refreshCount} de ${this.maxAttempts}...`);
+      }
+    });
+  }
+  getMenuForGroup(group: GroupsI): any[] {
+    const fullMenu = [
+      { title: 'Inicio', url: '/home', icon: 'home', permission: '' },
+      { title: 'Estados', url: '/state', icon: 'list', permission: 'permition_states' },
+      { title: 'Grupos', url: '/group', icon: 'grid', permission: 'permition_groups' },
+      { title: 'Tipos Solicitudes', url: '/trequests', icon: 'keypad', permission: 'permition_typerequests' },
+      { title: 'Solicitudes', url: '/requestsfire', icon: 'send', permission: 'permition_requests' },
+      { title: 'Estado Solicitud', url: '/state-requests', icon: 'send', permission: 'permition_state_requests' },
+      { title: 'Usuarios', url: '/user-supabase', icon: 'people', permission: 'permition_users' },
+      { title: 'Ver Solicitudes', url: '/view-excuse', icon: 'eye', permission: 'permition_viewsolic' },
+      { title: 'Register Supabase', url: '/register-supabase', icon: 'people-circle', permission: '' }
+    ];
+
+    return fullMenu.filter(
+      item => !item.permission || group[item.permission as keyof GroupsI]
+    );
   }
 
+  ngOnDestroy(): void {
+    if (this.refreshSub) this.refreshSub.unsubscribe();
+  }
+  async ngOnInit() {
+    await this.loadMenu();
+  }
 
-    // this.selectedUser = await this.authSupabaseService.getUserAppDataRol();
+  async showReloadAlert() {
+    const alert = await this.alertController.create({
+      header: 'Sin sesión activa',
+      message: 'No se pudo obtener la sesión del usuario. ¿Deseas recargar la aplicación?',
+      buttons: [
+        {
+          text: 'Recargar',
+          handler: async () => {
+            this.refreshCount = 0;
+            this.maxAttempts = 10;
+            await this.loadMenu();
+          }
+        }
+      ],
+      backdropDismiss: false
+    });
 
-    // if (this.selectedUser && this.selectedUser.rol) {
-    //   this.setupMenu(this.selectedUser.rol); // rol ya debe ser el objeto completo, no solo el ID
-    // }
-
-
-  // setupMenu(rol: RolsI) {
-  //   this.appsPages = [
-  //     { title: 'Inicio', url: '/home', icon: 'home' },
-
-  //     rol.permition_states && {
-  //       title: 'Estados', url: '/state', icon: 'list'
-  //     },
-
-  //     rol.permition_groups && {
-  //       title: 'Grupos', url: '/group', icon: 'grid'
-  //     },
-
-  //     rol.permition_rol && {
-  //       title: 'Roles', url: '/auth/rols', icon: 'settings'
-  //     },
-
-  //     rol.permition_users && {
-  //       title: 'Usuarios', url: '/user-supabase', icon: 'people'
-  //     },
-
-  //     rol.permition_typereqs && {
-  //       title: 'Tipos Solicitudes', url: '/trequests', icon: 'keypad'
-  //     },
-
-  //     rol.permition_requests && {
-  //       title: 'Solicitudes', url: '/requestsfire', icon: 'send'
-  //     },
-
-  //     rol.permition_viewsolic && {
-  //       title: 'Ver Solicitudes', url: '/view-excuse', icon: 'eye'
-  //     },
-  //     {
-  //       title: 'Register Supabase', url: '/register-supabase', icon: 'people-circle'
-  //     }
-  //   ].filter(Boolean);
-  // }
+    await alert.present();
+  }
   async logout() {
     await this.authSupabaseService.signOut().then(() => {
-      //this.menuCtrl.close('first');
-      //this.auth.clearSession();
       this.router.navigate(['/auth']).then(() => {
         location.reload();
       })
     });
+  }
+
+  private async checkNotifications() {
+    const user = await this.authSupabaseService.getUserAppData();
+
+    if (!user?.id) return;
+
+    this.notificationService.getUnreadNotifications(user.id).subscribe(notifs => {
+      this.notificationCount = notifs.length;
+    });
+  }
+
+  openNotifications() {
+    this.router.navigate(['/notificaciones']); // o abre un modal
   }
 }

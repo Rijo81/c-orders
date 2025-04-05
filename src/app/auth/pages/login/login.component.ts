@@ -55,7 +55,6 @@ export class LoginComponent implements OnInit {
 
       const { email, password, rememberMe } = this.loginForm.value;
 
-
       await this.supabaseService.signIn(email, password);
 
       if (rememberMe) {

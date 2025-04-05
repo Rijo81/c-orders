@@ -10,7 +10,6 @@
   <ion-label>
     <h1 class="sub-title">Excusas de Estudiantes</h1>
   </ion-label>
-  <h1>HOLA</h1>
   <ion-card *ngFor="let request of filteredRequests">
     <ion-card-header>
       <ion-card-title>{{ request.typeName }}</ion-card-title>
@@ -24,7 +23,7 @@
       <ul  class="borderlist">
         <!-- Mostrar formData dinámicamente -->
          @for (key of objectKeys(request.formData); track $index) {
-           <li class="stylemagin" >
+           <li class="stylemagin" (click)="goToDetails(request.id)" >
              <strong>{{ key }}:</strong>
               <ng-container *ngIf="isImage(request.formData[key]); else nonImageContent">
                 <ion-img [src]="request.formData[key]" alt="{{ key }}" class="image-size"></ion-img>

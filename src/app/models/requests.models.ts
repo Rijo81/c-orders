@@ -1,5 +1,7 @@
 
 import { GroupsI } from "./groups.models";
+import { Models } from "./models";
+import { StateI } from "./state.models";
 
 export interface FieldsRequestsI {
   name: string;
@@ -12,6 +14,12 @@ export interface RequestsI {
   group_origin: { id?: string; name: string; parentId?: string };
   group_destine: { id?: string; name: string; parentId?: string };
   typeName: string;
+  created_at?: string;
+  user_id?: string;
+  state_id?: string;
+  states?: {
+    name: string;
+  }
 }
 
 export interface TypeRI {

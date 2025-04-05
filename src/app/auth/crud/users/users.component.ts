@@ -8,12 +8,11 @@ import { CommonModule } from '@angular/common';
 import { addIcons } from 'ionicons';
 import { create, trash, add } from 'ionicons/icons';
 import { InteractionService } from 'src/app/services/interaction.service';
-import { RolsI } from 'src/app/models/rols.models';
 import { GroupsI } from 'src/app/models/groups.models';
 import { GroupService } from 'src/app/services/crud/group.service';
-import { RolsService } from 'src/app/services/crud/rols.service';
 import { UserService } from 'src/app/services/crud/user.service';
 import { SupabaseService } from 'src/app/services/supabase/supabase.service';
+
 @Component({
   selector: 'app-users',
   templateUrl: './users.component.html',
@@ -25,16 +24,14 @@ import { SupabaseService } from 'src/app/services/supabase/supabase.service';
 })
 export class UsersComponent  implements OnInit {
 
-  users: Models.User.UserssI[] = [];
-  rols: RolsI[] = [];
+  users: Models.User.UsersI[] = [];
   groups: GroupsI[] = [];
-  newUser: Models.User.UserssI = { name: '', email: '', password: '', rol: '', group_id: '' };
-  objectUsers = {name: '',  email: '', password: '', rol: '', group_id: ''};
+  newUser: Models.User.UsersI = this.getDefaultUsers();
   photo: File | null = null
   isEditing = false;
   editingUserId: string | null = null;
   //BUSQUEDA // Lista original de usuarios
-  filteredUsers: Models.User.UserssI[] = []; // Lista filtrada de usuarios
+  filteredUsers: Models.User.UsersI[] = []; // Lista filtrada de usuarios
   searchForm!: FormGroup;
   selectedPhoto: File | null = null;
 
@@ -43,14 +40,12 @@ export class UsersComponent  implements OnInit {
     if (file) this.selectedPhoto = file;
   }
 
-
   @ViewChild('modalCreate') modal!: IonModal;
   @ViewChild('modalUpdate') modalEdit!: IonModal;
 
 
   constructor(private userService: UserService,
               private groupService: GroupService,
-              private rolService: RolsService,
               private supabaseService: SupabaseService,
               private interactionService: InteractionService,
               ) {
@@ -61,10 +56,6 @@ export class UsersComponent  implements OnInit {
 
     this.searchForm = new FormGroup({
       search: new FormControl('')
-    });
-
-    this.rolService.getRols().subscribe(rol => {
-      this.rols = rol;
     });
 
     this.groupService.getGroups().subscribe(group => {
@@ -102,6 +93,7 @@ export class UsersComponent  implements OnInit {
   }
 
   openModalCreate() {
+    this.resetForm();
     this.modal.present(); // Muestra el primer modal
   }
 
@@ -125,47 +117,66 @@ export class UsersComponent  implements OnInit {
     });
   }
 
-  getDefaultUsers(): Models.User.UserssI {
-    return { name: '', email: '', password: '',  rol: '', group_id: '', photo: '' };
+  getDefaultUsers(): Models.User.UsersI {
+    return { name: '', email: '', password: '', group_id: { id: '',
+      name: '',
+      parentId: '',
+      permition_states: false,
+      permition_groups: false,
+      permition_users: false,
+      permition_typerequests: false,
+      permition_requests: false,
+      permition_viewsolic: false,}, photo: '' };
   }
 
   uploadPhoto(event: any) {
     this.photo = event.target.files[0];
+  }
+
+  resetForm() {
+    this.newUser = {
+      id: '',
+      name: '',
+      email: '',
+      password: '',
+      group_id: { id: '',
+        name: '',
+        parentId: '',
+        permition_states: false,
+        permition_groups: false,
+        permition_users: false,
+        permition_typerequests: false,
+        permition_requests: false,
+        permition_viewsolic: false,}, photo: '' };
+    this.photo = null;
+    this.selectedPhoto = null;
+  }
+
+  getGroupNameById(id: string): string {
+    const group = this.groups.find(g => g.id === id);
+    return group ? group.name : 'Sin grupo';
   }
   async addUser() {
     if (!this.photo) {
       console.error("Selecciona una foto");
       return;
     }
-
     try {
-      await this.supabaseService.signUp(this.newUser.name, this.newUser.email, this.newUser.password, this.newUser.rol, this.newUser.group_id, this.photo);
+      this.interactionService.showLoading();
+      await this.supabaseService.signUp(this.newUser.name, this.newUser.email, this.newUser.password, this.newUser.group_id, this.photo);
+      this.interactionService.dismissLoading();
       this.loadUsers();
+      this.modal.dismiss(); // 🔒 Cierra el modal
+      this.resetForm(); // 🔄 Limpia el formulario
+      this.interactionService.showToast("Usuario registrado con éxito ✅");
       console.log("Registro exitoso");
     } catch (error) {
       console.error(error);
+      this.interactionService.showToast("Error al registrar usuario ❌");
     }
   }
-//  async addUser() {
-//   if (this.newUser.name && this.newUser.email) {
-//     await this.interactionService.showLoading('Procesando...');
-//     this.userService.addUser(this.newUser).subscribe({
-//       next: () => {
-//         this.newUser = this.getDefaultUsers();
-//         this.loadUsers();
-//         this.modal.dismiss(this.newUser, 'confirm');
-//         this.interactionService.showToast('Usuario creado con éxito');
-//       },
-//       error: (err) => {
-//         this.interactionService.showToast('Error al agregar usuario');
-//         console.error(err);
-//       },
-//       complete: () => this.interactionService.dismissLoading()
-//     });
-//   }
-//   }
 
-  editUser(user: Models.User.UserssI) {
+  editUser(user: Models.User.UsersI) {
     this.isEditing = true;
     this.editingUserId = user.id!;
     this.newUser = { ...user };

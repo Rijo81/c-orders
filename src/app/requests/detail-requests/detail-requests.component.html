@@ -1,0 +1,59 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/view-excuse"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Detalle de Solicitud</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+
+  <ion-card *ngIf="request">
+    <ion-card-header>
+      <ion-card-title>{{ request.typeName }}</ion-card-title>
+      <ion-card-subtitle>
+        <strong>De:</strong> {{ request.group_origin?.name }} |
+        <strong>Para:</strong> {{ request.group_destine?.name }}
+      </ion-card-subtitle>
+    </ion-card-header>
+
+    <ion-card-content>
+      <ul class="borderlist">
+        @for (key of objectKeys(request.formData); track $index) {
+          <li class="stylemagin">
+            <strong>{{ key }}:</strong>
+            <ng-container *ngIf="isImage(request.formData[key]); else nonImageContent">
+              <ion-img
+                [src]="request.formData[key]"
+                alt="{{ key }}"
+                class="image-size"
+                (click)="openImageModal(request.formData[key])">
+              </ion-img>
+            </ng-container>
+            <ng-template #nonImageContent>
+              @if (isStringOrNumber(request.formData[key])) {
+                <span>{{ request.formData[key] }}</span>
+              }
+            </ng-template>
+          </li>
+        }
+      </ul>
+
+      <ion-item>
+        <ion-label>Estado</ion-label>
+        <ion-select [(ngModel)]="selectedStateId" placeholder="Seleccione estado">
+          <ion-select-option *ngFor="let state of states" [value]="state.id">
+            {{ state.name }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-button expand="block" color="primary" (click)="updateState()">
+        Guardar Estado
+      </ion-button>
+      <!-- request.id, selectedStateId -->
+    </ion-card-content>
+  </ion-card>
+
+</ion-content>

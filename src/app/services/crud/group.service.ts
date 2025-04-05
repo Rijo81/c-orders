@@ -27,14 +27,35 @@ export class GroupService {
 
   // Agregar grupo
   addGroup(group: GroupsI): Observable<any> {
-    return from(
-      supabase
-        .from('groups')
-        .insert([group])
-        .then(({ error }) => {
-          if (error) throw error;
-        })
-    );
+
+     // Sanitizar el parentId: si viene vacío, lo convertimos en null
+  const cleanGroup = {
+    ...group,
+    parentId: group.parentId ? group.parentId : null
+  };
+
+  return from(
+    supabase
+      .from('groups')
+      .insert([cleanGroup])
+      .select()  // Opcional: si quieres que devuelva el grupo creado
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('🚨 Error al insertar grupo:', error.message);
+          throw error;
+        }
+        console.log('✅ Grupo agregado:', data);
+        return data;
+      })
+  );
+    // return from(
+    //   supabase
+    //     .from('groups')
+    //     .insert([group])
+    //     .then(({ error }) => {
+    //       if (error) throw error;
+    //     })
+    // );
   }
 
   // Actualizar grupo

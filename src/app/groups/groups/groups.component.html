@@ -52,22 +52,25 @@
           </ion-item>
           <ion-label>Permisos</ion-label>
           <ion-item>
-              <ion-checkbox  justify="start" labelPlacement="end" [(ngModel)]="newGroup.permition_states" [ngModelOptions]="{standalone: true}">Estados</ion-checkbox><br>
+              <ion-checkbox  justify="start" labelPlacement="end" [(ngModel)]="newGroup.permition_states" [ngModelOptions]="{standalone: true}">Gestionar Estados</ion-checkbox><br>
           </ion-item>
           <ion-item>
-            <ion-checkbox justify="start" labelPlacement="end" [(ngModel)]="newGroup.permition_groups" [ngModelOptions]="{standalone: true}">Gestión de Usuarios</ion-checkbox><br>
+            <ion-checkbox justify="start" labelPlacement="end" [(ngModel)]="newGroup.permition_groups" [ngModelOptions]="{standalone: true}">Gestionar Grupos</ion-checkbox><br>
           </ion-item>
           <ion-item>
-            <ion-checkbox justify="start" labelPlacement="end" [(ngModel)]="newGroup.permition_users" [ngModelOptions]="{standalone: true}">Ver Solicitude</ion-checkbox><br>
+            <ion-checkbox justify="start" labelPlacement="end" [(ngModel)]="newGroup.permition_users" [ngModelOptions]="{standalone: true}">Gestionar Usuarios</ion-checkbox><br>
           </ion-item>
           <ion-item>
-            <ion-checkbox justify="start" labelPlacement="end" [(ngModel)]="newGroup.permition_typerequests" [ngModelOptions]="{standalone: true}">Solicitudes</ion-checkbox><br>
+            <ion-checkbox justify="start" labelPlacement="end" [(ngModel)]="newGroup.permition_typerequests" [ngModelOptions]="{standalone: true}">Gestionar Tipo de Solicitud</ion-checkbox><br>
           </ion-item>
           <ion-item>
-            <ion-checkbox justify="start" labelPlacement="end" [(ngModel)]="newGroup.permition_requests" [ngModelOptions]="{standalone: true}">Gestión de Usuarios</ion-checkbox><br>
+            <ion-checkbox justify="start" labelPlacement="end" [(ngModel)]="newGroup.permition_requests" [ngModelOptions]="{standalone: true}">Enviar Solicitudes</ion-checkbox><br>
           </ion-item>
           <ion-item>
-            <ion-checkbox justify="start" labelPlacement="end" [(ngModel)]="newGroup.permition_viewsolic" [ngModelOptions]="{standalone: true}">Ver Solicitude</ion-checkbox>
+            <ion-checkbox justify="start" labelPlacement="end" [(ngModel)]="newGroup.permition_viewsolic" [ngModelOptions]="{standalone: true}">Ver Solicitudes</ion-checkbox>
+          </ion-item>
+          <ion-item>
+            <ion-checkbox justify="start" labelPlacement="end" [(ngModel)]="newGroup.permition_state_requests" [ngModelOptions]="{standalone: true}">Estado Solicitud</ion-checkbox>
           </ion-item>
           <ion-button expand="full" type="submit" [disabled]="!formCreate.form.valid">
             Agregar
@@ -119,22 +122,25 @@
 
         <ion-label>Permisos</ion-label>
         <ion-item>
-            <ion-checkbox  justify="start" labelPlacement="end" [(ngModel)]="newGroup.permition_states" [ngModelOptions]="{standalone: true}">Estados</ion-checkbox><br>
+            <ion-checkbox  justify="start" labelPlacement="end" [(ngModel)]="newGroup.permition_states" [ngModelOptions]="{standalone: true}">Gestionar Estados</ion-checkbox><br>
         </ion-item>
         <ion-item>
-          <ion-checkbox justify="start" labelPlacement="end" [(ngModel)]="newGroup.permition_groups" [ngModelOptions]="{standalone: true}">Gestión de Usuarios</ion-checkbox><br>
+          <ion-checkbox justify="start" labelPlacement="end" [(ngModel)]="newGroup.permition_groups" [ngModelOptions]="{standalone: true}">Gestionar Grupos</ion-checkbox><br>
         </ion-item>
         <ion-item>
-          <ion-checkbox justify="start" labelPlacement="end" [(ngModel)]="newGroup.permition_users" [ngModelOptions]="{standalone: true}">Ver Solicitude</ion-checkbox><br>
+          <ion-checkbox justify="start" labelPlacement="end" [(ngModel)]="newGroup.permition_users" [ngModelOptions]="{standalone: true}">Gestionar Usuarios</ion-checkbox><br>
         </ion-item>
         <ion-item>
-          <ion-checkbox justify="start" labelPlacement="end" [(ngModel)]="newGroup.permition_typerequests" [ngModelOptions]="{standalone: true}">Solicitudes</ion-checkbox><br>
+          <ion-checkbox justify="start" labelPlacement="end" [(ngModel)]="newGroup.permition_typerequests" [ngModelOptions]="{standalone: true}">Gestionar Tipo de Solicitud</ion-checkbox><br>
         </ion-item>
         <ion-item>
-          <ion-checkbox justify="start" labelPlacement="end" [(ngModel)]="newGroup.permition_requests" [ngModelOptions]="{standalone: true}">Gestión de Usuarios</ion-checkbox><br>
+          <ion-checkbox justify="start" labelPlacement="end" [(ngModel)]="newGroup.permition_requests" [ngModelOptions]="{standalone: true}">Enviar Solicitud</ion-checkbox><br>
         </ion-item>
         <ion-item>
-          <ion-checkbox justify="start" labelPlacement="end" [(ngModel)]="newGroup.permition_viewsolic" [ngModelOptions]="{standalone: true}">Ver Solicitude</ion-checkbox>
+          <ion-checkbox justify="start" labelPlacement="end" [(ngModel)]="newGroup.permition_viewsolic" [ngModelOptions]="{standalone: true}">Ver Solicitudes</ion-checkbox>
+        </ion-item>
+        <ion-item>
+          <ion-checkbox justify="start" labelPlacement="end" [(ngModel)]="newGroup.permition_state_requests" [ngModelOptions]="{standalone: true}">Estado Solicitud</ion-checkbox>
         </ion-item>
           <ion-button expand="full" type="submit" [disabled]="!formEdit.form.valid">
             Actualizar
@@ -157,7 +163,7 @@
     <ion-item *ngFor="let group of groups">
       <ion-label>
         <h3>{{ group.name }}</h3>
-        <p>Grupo padre: {{ group.parentid }}</p>
+        <p>Grupo padre: {{ group.parentId }}</p>
       </ion-label>
       <ion-buttons slot="end">
         <ion-button color="danger" (click)="deleteGroup(group.id)">

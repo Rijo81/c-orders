@@ -10,7 +10,7 @@ import { RequestsI } from 'src/app/models/requests.models';
   providedIn: 'root'
 })
 export class RequestsService {
-  private table = 'requestss';
+  private table = 'requests';
 
   getRequests(): Observable<RequestsI[]> {
     return from(
@@ -59,31 +59,54 @@ export class RequestsService {
         })
     );
   }
+  getRequestsByUser(userId: string): Observable<RequestsI[]> {
+    return from(
+      supabase
+        .from(this.table) // 👈 Cambia por el nombre de tu tabla
+        .select('*')
+        .eq('user_id', userId) // 👈 Asume que hay un campo user_id
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        return data as RequestsI[];
+      })
+    );
+  }
 
-  //  private requestsCollection = collection(this.firestore, 'requests');
-  //       constructor(private firestore: Firestore) {}
+  async getRequestsByUserForState(userId: string): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('requests')
+      .select('id, typeName, created_at, state_id')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
 
-  //       // Obtener todos los usuarios
-  //       getRequests(): Observable<RequestsI[]> {
-  //         return from(getDocs(this.requestsCollection).then(snapshot =>
-  //           snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as RequestsI))
-  //         ));
-  //       }
+    if (error) {
+      console.error('❌ Error al obtener solicitudes:', error.message);
+      return [];
+    }
 
-  //       // Agregar usuario
-  //       addRequests(req: RequestsI): Observable<void> {
-  //         return from(addDoc(this.requestsCollection, req).then(() => {}));
-  //       }
+    return data || [];
+  }
 
-  //       // Editar usuario
-  //       updateRequests(id: string, req: Partial<RequestsI>): Observable<void> {
-  //         const reqDoc = doc(this.firestore, `requests/${id}`);
-  //         return from(updateDoc(reqDoc, req));
-  //       }
+  async getRequestById(id: string): Promise<RequestsI | null> {
+    return await supabase
+      .from('requests')
+      .select('*, state_id(*)') // incluye relación
+      .eq('id', id)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (error) throw error;
+        return data as RequestsI;
+      });
+  }
 
-  //       // Eliminar usuario
-  //       deleteRequests(id: string): Observable<void> {
-  //         const reqDoc = doc(this.firestore, `requests/${id}`);
-  //         return from(deleteDoc(reqDoc));
-  //       }
+  async updateRequestState(id: string, state_id: string): Promise<void> {
+    return await supabase
+      .from('requests')
+      .update({ state_id })
+      .eq('id', id)
+      .then(({ error }) => {
+        if (error) throw error;
+      });
+  }
 }

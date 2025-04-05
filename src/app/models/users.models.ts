@@ -1,5 +1,4 @@
 import { GroupsI } from "./groups.models";
-import { RolsI } from "./rols.models";
 
 export namespace ModelsUsers {
 
@@ -13,7 +12,7 @@ export namespace ModelsUsers {
     id?: string,
     name: string,
     email: string,
-    rol:  RolsI,
+    password: string,
     group_id: GroupsI,
     photo?: string
   }

@@ -8,10 +8,10 @@ import { Models } from 'src/app/models/models';
 export class UserService {
 
   // Obtener todos los usuarios
-  getUsers(): Observable<Models.User.UserssI[]> {
+  getUsers(): Observable<Models.User.UsersI[]> {
     return from(this.fetchUsers());
   }
-  private async fetchUsers(): Promise<Models.User.UserssI[]> {
+  private async fetchUsers(): Promise<Models.User.UsersI[]> {
     const { data, error } = await supabase
       .from('usersapp')  // Asegúrate que este es el nombre correcto
       .select('*');
@@ -19,11 +19,11 @@ export class UserService {
     if (error) throw error;
 
     console.log('[Supabase] Data cargada:', data);
-    return data as Models.User.UserssI[];
+    return data as Models.User.UsersI[];
   }
 
   // Agregar usuario
-  addUser(user: Models.User.UserssI): Observable<void> {
+  addUser(user: Models.User.UsersI): Observable<void> {
     return from(
       supabase
         .from('usersapp')
@@ -35,7 +35,7 @@ export class UserService {
   }
 
   // Editar usuario
-  updateUser(id: string, user: Partial<Models.User.UserssI>): Observable<void> {
+  updateUser(id: string, user: Partial<Models.User.UsersI>): Observable<void> {
     return from(
       supabase
         .from('usersapp')

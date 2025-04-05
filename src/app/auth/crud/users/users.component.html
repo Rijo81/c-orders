@@ -22,12 +22,13 @@
   <ion-list *ngIf="filteredUsers.length > 0; else noUsers">
     <ion-item *ngFor="let user of filteredUsers">
       <ion-avatar slot="start">
-        <img [src]="user.photo || 'assets/img/default-user.png'" />
+        <img [src]="user.photo || '/src/assets/avatar.png'" />
       </ion-avatar>
       <ion-label>
         <h2>{{ user.name }}</h2>
         <p>{{ user.email }}</p>
-        <p>Rol: {{ user.rol }} | Grupo: {{ user.group_id }}</p>
+        <p>{{ user.photo }}</p>
+        <p>Grupo: {{  user.group_id?.name }}</p>
       </ion-label>
       <ion-buttons slot="end">
         <ion-button color="success" (click)="editUser(user)">
@@ -85,15 +86,6 @@
               [(ngModel)]="newUser.email"
             ></ion-input>
           </ion-item>
-
-            <ion-item>
-              <ion-label>Roles</ion-label>
-              <ion-select value="peperoni" name="select1" [ngModelOptions]="{standalone: true}"[(ngModel)]="newUser.rol" multiple="true" placeholder="Selecciona un rol">
-                <ion-select-option *ngFor="let rol of rols" [value]="rol.id">
-                  {{ rol.name }}
-                </ion-select-option>
-              </ion-select>
-            </ion-item>
 
           <ion-item>
             <ion-label>Grupos</ion-label>
@@ -157,15 +149,6 @@
               required
               [(ngModel)]="newUser.email"
             ></ion-input>
-          </ion-item>
-
-          <ion-item>
-            <ion-label>Rol</ion-label>
-            <ion-select name="editRol" [(ngModel)]="newUser.rol">
-              <ion-select-option *ngFor="let rol of rols" [value]="rol.id">
-                {{ rol.name }}
-              </ion-select-option>
-            </ion-select>
           </ion-item>
 
           <ion-item>

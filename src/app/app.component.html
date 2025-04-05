@@ -1,9 +1,29 @@
 <ion-app>
+  <!-- <ion-header>
+    <ion-toolbar color="primary">
+      <ion-title>Mi App</ion-title>
+
+      <ion-buttons slot="end"> -->
+        <!-- Notificación -->
+        <!-- <ion-button (click)="openNotifications()" fill="clear">
+          <ion-icon name="notifications-outline"></ion-icon>
+          <ion-badge *ngIf="notificationCount > 0" color="danger" class="notif-badge">
+            {{ notificationCount }}
+          </ion-badge>
+        </ion-button> -->
+
+        <!-- Imagen de usuario -->
+        <!-- <ion-avatar slot="end">
+          <img [src]="user?.photo || 'assets/img/default-user.png'" />
+        </ion-avatar>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header> -->
   <ion-split-pane contentId="main-content">
+
     <ion-menu *ngIf="showMenu" contentId="main-content" type="overlay">
       <ion-header>
         <ion-toolbar color="tertiary" >
-          <!-- <ion-title>Menu</ion-title> -->
           <ion-list-header style="color: white; font-size:x-large;">GSE</ion-list-header>
           <ion-note style="color: white; font-weight: bold; font-family: Helvetica;">Gestion de Solicitudes</ion-note>
           <ion-menu-toggle auto-hide="true">
@@ -11,16 +31,7 @@
               <ion-icon name="log-out" slot="start"></ion-icon>
               Cerrar sesión
             </ion-button>
-            <!-- <ion-item button (click)="logout()" class="logout">
-              <ion-icon name="log-out" slot="start"></ion-icon>
-              <ion-label>Cerrar sesión</ion-label>
-            </ion-item> -->
           </ion-menu-toggle>
-          <!-- <ion-button (click)="logout()" color="light" size="small">
-            <ion-icon slot="start" name="log-out"></ion-icon>
-            Cerrar Session
-          </ion-button> -->
-          <!-- <h3 (click)="logout()">Cerrar Session</h3> -->
           <ion-buttons slot="end">
             <ion-menu-button>
               <ion-icon name="close"></ion-icon>

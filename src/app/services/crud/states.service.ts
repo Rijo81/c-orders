@@ -30,30 +30,19 @@ export class StatesService {
   deleteUser(id: string): Observable<any> {
     return from(supabase.from('states').delete().eq('id', id));
   }
-  //  private statesCollection = collection(this.firestore, 'states');
-  //   constructor(private firestore: Firestore) {}
 
-  //   // Obtener todos los usuarios
-  //   getStates(): Observable<StateI[]> {
-  //     return from(getDocs(this.statesCollection).then(snapshot =>
-  //       snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as StateI))
-  //     ));
-  //   }
+  async getInitialState(): Promise<string | null> {
+    const { data, error } = await supabase
+      .from('states')
+      .select('id')
+      .eq('name', 'Inactivo')  // 👈 o el nombre de tu estado inicial
+      .maybeSingle();
 
-  //   // Agregar usuario
-  //   addState(user: StateI): Observable<void> {
-  //     return from(addDoc(this.statesCollection, user).then(() => {}));
-  //   }
+    if (error) {
+      console.error('❌ Error al buscar estado inicial:', error.message);
+      return null;
+    }
 
-  //   // Editar usuario
-  //   updateState(id: string, state: Partial<StateI>): Observable<void> {
-  //     const stateDoc = doc(this.firestore, `states/${id}`);
-  //     return from(updateDoc(stateDoc, state));
-  //   }
-
-  //   // Eliminar usuario
-  //   deleteUser(id: string): Observable<void> {
-  //     const stateDoc = doc(this.firestore, `states/${id}`);
-  //     return from(deleteDoc(stateDoc));
-  //   }
+    return data?.id ?? null;
+  }
 }

@@ -8,29 +8,17 @@
   <form (submit)="register()">
     <ion-item>
       <ion-label position="floating">Nombre</ion-label>
-      <ion-input [(ngModel)]="name" name="name" required></ion-input>
+      <ion-input [(ngModel)]="newUser.name" name="name" required></ion-input>
     </ion-item>
 
     <ion-item>
       <ion-label position="floating">Email</ion-label>
-      <ion-input type="email" [(ngModel)]="email" name="email" required></ion-input>
-    </ion-item>
-
-    <ion-item>
-      <ion-label>Rol</ion-label>
-      <ion-select [(ngModel)]="rol" name="rol" required>
-        <ion-select-option
-                *ngFor="let rol of rols"
-                [value]="rol.id"
-              >
-                {{ rol.name }}
-              </ion-select-option>
-      </ion-select>
+      <ion-input type="email" [(ngModel)]="newUser.email" name="email" required></ion-input>
     </ion-item>
 
     <ion-item>
       <ion-label>Grupo</ion-label>
-      <ion-select [(ngModel)]="group_id" name="group_id" placeholder="Seleccione el grupo" required>
+      <ion-select [(ngModel)]="newUser.group_id" name="group_id" placeholder="Seleccione el grupo" required>
         <ion-select-option
                 *ngFor="let group of groups"
                 [value]="group.id"
@@ -42,7 +30,7 @@
 
     <ion-item>
       <ion-label position="floating">Password</ion-label>
-      <ion-input type="password" [(ngModel)]="password" name="password" required></ion-input>
+      <ion-input type="password" [(ngModel)]="newUser.password" name="password" required></ion-input>
     </ion-item>
 
     <ion-item>

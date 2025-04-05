@@ -1,0 +1,28 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Mis Solicitudes</ion-title>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content *ngIf="!isLoading">
+  <ion-list>
+    <ion-item *ngFor="let request of requests">
+      <ion-avatar slot="end">
+        <img [src]="getStateImage(getStateNameById(request.state_id || ''))" />
+      </ion-avatar>
+
+      <ion-label>
+        <h2>{{ request.typeName }}</h2>
+        <p>Fecha: {{ request.created_at | date: 'short' }}</p>
+        <p><strong>Estado:</strong> {{  getStateNameById(request.state_id || '') }}</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <ion-text *ngIf="requests.length === 0">
+    <p class="ion-padding">No has realizado ninguna solicitud.</p>
+  </ion-text>
+</ion-content>

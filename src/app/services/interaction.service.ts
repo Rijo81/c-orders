@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { AlertController, IonicSafeString, 
+import { AlertController, IonicSafeString,
   LoadingController, ToastController } from '@ionic/angular/standalone';
 
 @Injectable({
@@ -40,7 +40,7 @@ export class InteractionService {
   }
 
   async presentAlert(header: string, message: string, textCANCEL: string = null, textOK: string = 'OK'): Promise<boolean> {
-    return new Promise(  async  (resolve) => { 
+    return new Promise(  async  (resolve) => {
         let buttons = [];
         if (textCANCEL) {
             buttons.push( {
@@ -56,7 +56,7 @@ export class InteractionService {
           handler: async () => {
             resolve(true);
           }
-        })  
+        })
         const alert = await this.alertController.create({
             header,
             message: (new IonicSafeString(message)).value,
@@ -71,5 +71,5 @@ export class InteractionService {
 
 
 
-  
+
 }

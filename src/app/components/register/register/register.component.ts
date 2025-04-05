@@ -23,18 +23,21 @@ import { CommonModule } from '@angular/common';
 })
 export class RegisterComponent implements OnInit {
 
-  name = '';
-  email = '';
-  password = '';
-  rol = '';
-  group_id = '';
+
+  newUser = { name: '', email: '', password: '', group_id: { id: '',
+    name: '',
+    parentId: '',
+    permition_states: false,
+    permition_groups: false,
+    permition_users: false,
+    permition_typerequests: false,
+    permition_requests: false,
+    permition_viewsolic: false,}, photo: '' };
   photo: File | null = null;
-  rols: RolsI[] = [];
   groups: GroupsI[] = [];
 
   constructor(private supabaseService: SupabaseService, private interactionService: InteractionService,
-        private groupService: GroupService,
-      private rolService: RolsService) {}
+        private groupService: GroupService ) {}
 
   ngOnInit() {
       this.supabaseService.sessionChanged
@@ -46,7 +49,6 @@ export class RegisterComponent implements OnInit {
             retry({ count: 3, delay: 1000 })      // Si falla, reintenta hasta 3 veces
           )
           .subscribe(() => {
-            this.loadRols();
             this.loadGroup();
           });
       }
@@ -65,21 +67,6 @@ export class RegisterComponent implements OnInit {
             }
           });
         }
-
-        loadRols() {
-          console.log('Estamos a dentro del metodo de Roles');
-
-             this.rolService.getRols().subscribe({
-              next: (rol) => {
-                console.log(rol);
-                this.rols = rol;
-              },
-              error: (err) => {
-                console.error("Error al cargar los roles:", err);
-                this.interactionService.showToast('Error al cargar Rol.');
-              }
-            });
-          }
   uploadPhoto(event: any) {
     this.photo = event.target.files[0];
   }
@@ -91,7 +78,7 @@ export class RegisterComponent implements OnInit {
     }
 
     try {
-      await this.supabaseService.signUp(this.name, this.email, this.password, this.rol, this.group_id, this.photo);
+      await this.supabaseService.signUp(this.newUser.name, this.newUser.email, this.newUser.password, this.newUser.group_id, this.photo);
       console.log("Registro exitoso");
     } catch (error) {
       console.error(error);

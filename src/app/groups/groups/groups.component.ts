@@ -25,13 +25,14 @@ export class GroupsComponent  implements OnInit {
   filteredGroups: GroupsI[] = [];
   newGroup: GroupsI = {
     name: '',
-    parentid: '',
+    parentId: '',
     permition_states: false,
     permition_groups: false,
     permition_users: false,
     permition_typerequests: false,
     permition_requests: false,
-    permition_viewsolic: false
+    permition_viewsolic: false,
+    permition_state_requests: false,
    };
   isEditing = false;
   editingGroupId: string | null = null;
@@ -110,7 +111,7 @@ export class GroupsComponent  implements OnInit {
       this.interactionService.showToast('El nombre es obligatorio');
       return;
     }
-    this.newGroup.parentid = this.selectedGroup;
+    this.newGroup.parentId = this.selectedGroup;
     await this.interactionService.showLoading('Guardando...');
     this.groupService.addGroup(this.newGroup).subscribe({
       next: () => {
@@ -149,7 +150,7 @@ export class GroupsComponent  implements OnInit {
       next: () => {
         this.isEditing = false;
         this.editingGroupId = null;
-        this.newGroup = { name: '', parentid: this.selectedGroup };
+        this.newGroup = { name: '', parentId: this.selectedGroup };
         this.loadGroup();
         this.interactionService.dismissLoading();
         this.modalEdit.dismiss(null, 'confirm');

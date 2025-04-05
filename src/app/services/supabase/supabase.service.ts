@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { Session, User } from '@supabase/supabase-js';
 import { BehaviorSubject, catchError, from, map, Observable, throwError } from 'rxjs';
 import { supabase } from 'src/app/core/supabase.client';
+import { GroupsI } from 'src/app/models/groups.models';
 import { Models } from 'src/app/models/models';
-import { RolsI } from 'src/app/models/rols.models';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -12,6 +12,8 @@ import { environment } from 'src/environments/environment';
 export class SupabaseService {
 
   sessionChanged = new BehaviorSubject<Session | null>(null);
+  private userSubject = new BehaviorSubject<Models.User.UsersI | null>(null);
+  public user$ = this.userSubject.asObservable();
 
   constructor() {
     supabase.auth.getSession().then(({ data }) => {
@@ -27,8 +29,26 @@ export class SupabaseService {
     return supabase;
   }
 
+async loadUserAppData(): Promise<void> {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const userId = sessionData?.session?.user?.id;
+  if (!userId) return;
+
+  const { data, error } = await supabase
+    .from('usersapp')
+    .select('*, group_id(*)')
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (!error && data) {
+    this.userSubject.next(data as Models.User.UsersI);
+  } else {
+    console.error('Error cargando usuario:', error);
+  }
+}
+
   // Método para registrar un usuario
-  async signUp(name: string, email: string, password: string, rol: string, group_id: string, photo: File) {
+  async signUp(name: string, email: string, password: string,  group_id: GroupsI | string, photo: File) {
     try {
       // Crear usuario en Supabase Auth
       const { data, error } = await supabase.auth.signUp({ email, password });
@@ -54,9 +74,13 @@ export class SupabaseService {
       // Guardar los datos en la tabla `usuarios`
       console.log('ID: ', data.user.id);
       //const groupIdFinal = Array.isArray(group_id) ? group_id[0] : group_id;
-      group_id = group_id.toString();
+      const groupUUID = typeof group_id === 'object' && 'id' in group_id
+        ? group_id.id
+        : group_id.toString();
+
+      //group_id = group_id;
       const { error: dbError } = await supabase.from('usersapp').insert([
-        { id: data.user?.id, name, email, rol, group_id, photo: photoUrl }
+        { id: data.user?.id, name, email, group_id: groupUUID, photo: photoUrl }
       ]);
 
       if (dbError) {
@@ -108,19 +132,10 @@ export class SupabaseService {
       return { data: { user: null }, error };
     }
   }
-
-  // getAllUsers(): Observable<Models.User.UsersI[]> {
-  //   return from(
-  //     supabase
-  //       .from('usersapp')
-  //       .select('*') // Puedes poner campos específicos si quieres limitar los datos
-  //   ).pipe(
-  //     catchError((error) => {
-  //       console.error('Error al obtener los usuarios:', error);
-  //       return throwError(() => error);
-  //     })
-  //   );
-  // }
+  async getCurrentUserId(): Promise<string | null> {
+    const { data: sessionData } = await supabase.auth.getSession();
+    return sessionData?.session?.user?.id ?? null;
+  }
 
   getUserByGroupId(group_id: string): Observable<any> {
     return from(
@@ -155,21 +170,43 @@ export class SupabaseService {
     );
   }
   async getUserAppData(): Promise<Models.User.UsersI | null> {
-    const { data: sessionData, error } = await supabase.auth.getSession();
-    const userId = sessionData?.session?.user?.id;
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
 
-    if (!userId) return null;
-
-    const { data, error: err } = await supabase
-      .from('usersapp')
-      .select('*')
-      .eq('id', userId) // o como sea que hayas llamado ese campo relacionado
-      .single();
-
-    return data ?? null;
+  if (sessionError) {
+    console.error('❌ Error obteniendo sesión:', sessionError.message);
+    return null;
   }
 
-  async getUserAppDataRol(): Promise<Models.User.UsersI | null>{
+  const userId = sessionData?.session?.user?.id;
+
+  if (!userId) {
+    console.warn('⚠️ No hay usuario autenticado o sesión expirada.');
+    return null;
+  }
+
+  console.log('✅ ID del usuario autenticado:', userId);
+
+  const { data, error: userError } = await supabase
+    .from('usersapp')
+    .select('*, group_id(*)') // 👈 trae los datos del grupo completo
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (userError) {
+    console.error('❌ Error al obtener datos del usuario de usersapp:', userError.message);
+    return null;
+  }
+
+  if (!data?.group_id) {
+    console.warn('⚠️ El usuario no tiene un grupo asignado. Revisa la tabla "usersapp".');
+  }
+
+  console.log('✅ Datos completos del usuario:', data);
+
+  return data as Models.User.UsersI ;
+  }
+
+  async getUserAppDataRol(): Promise<Models.User.UsersI | null>{ //
 
     const { data: sessionData } = await supabase.auth.getSession();
     const userId = sessionData?.session?.user?.id;
