@@ -14,7 +14,7 @@ import { NotificationappService } from './services/supabase/notification/notific
   selector: 'app-root',
   templateUrl: 'app.component.html',
   standalone: true,
-  imports: [IonAvatar, IonBadge, IonTitle, IonButton, IonIcon, IonLabel, IonItem, IonList, IonContent, IonListHeader, IonButtons, IonNote, IonToolbar,
+  imports: [IonButton, IonIcon, IonLabel, IonItem, IonList, IonContent, IonListHeader, IonButtons, IonNote, IonToolbar,
     IonHeader, IonSplitPane, IonApp, IonRouterOutlet, IonMenu, IonMenuButton, IonMenuToggle, RouterLink,
   CommonModule ],
 })
@@ -36,9 +36,9 @@ export class AppComponent implements OnInit, OnDestroy {
     addIcons(all);
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
-        this.showMenu = !event.url.includes('auth');
+        this.showMenu = !event.url.includes('auth')  && !event.url.includes('access');
         // 👇 Aquí desactivamos el swipe si estás en login
-        if (event.url.includes('auth')) {
+        if (event.url.includes('auth') || event.url.includes('access')) {
           this.menuCtrl.enable(false);  // 🔒 Desactiva swipe
         } else {
           this.menuCtrl.enable(true);   // ✅ Activa swipe en otras vistas
@@ -48,6 +48,10 @@ export class AppComponent implements OnInit, OnDestroy {
   }
   private async loadMenu() {
     this.refreshSub = interval(1000).subscribe(async () => {
+      const currentUrl = this.router.url;
+      if (currentUrl.includes('access')) {
+        return; // ❌ No ejecutar en esta ruta
+      }
       this.refreshCount++;
 
       const user = await this.authSupabaseService.getUserAppData();
@@ -80,7 +84,6 @@ export class AppComponent implements OnInit, OnDestroy {
       { title: 'Estado Solicitud', url: '/state-requests', icon: 'send', permission: 'permition_state_requests' },
       { title: 'Usuarios', url: '/user-supabase', icon: 'people', permission: 'permition_users' },
       { title: 'Ver Solicitudes', url: '/view-excuse', icon: 'eye', permission: 'permition_viewsolic' },
-      { title: 'Register Supabase', url: '/register-supabase', icon: 'people-circle', permission: '' }
     ];
 
     return fullMenu.filter(

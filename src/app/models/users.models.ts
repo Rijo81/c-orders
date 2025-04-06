@@ -12,6 +12,7 @@ export namespace ModelsUsers {
     id?: string,
     name: string,
     email: string,
+    phone?: string,
     password: string,
     group_id: GroupsI,
     photo?: string

@@ -19,11 +19,11 @@
       <ion-label>Recordar credenciales</ion-label>
       <ion-toggle formControlName="rememberMe" name="toggle"></ion-toggle>
     </ion-item>
-
     <ion-button expand="full" type="submit" [disabled]="loginForm.invalid" >Iniciar Sesión</ion-button>
-
-    <ion-item>
-      <ion-label>{{error}}</ion-label>
+    <ion-item (click)="goAccessRequest()">
+      <ion-icon slot="start" name="key" class="key"></ion-icon>
+      <h4 class="access">Solicitud de Acceso</h4>
     </ion-item>
+      <ion-label>{{error}}</ion-label>
   </form>
 </ion-content>

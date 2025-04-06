@@ -48,7 +48,7 @@ async loadUserAppData(): Promise<void> {
 }
 
   // Método para registrar un usuario
-  async signUp(name: string, email: string, password: string,  group_id: GroupsI | string, photo: File) {
+  async signUp(name: string, email: string, phone: string, password: string,  group_id: GroupsI | string, photo: File) {
     try {
       // Crear usuario en Supabase Auth
       const { data, error } = await supabase.auth.signUp({ email, password });
@@ -80,7 +80,7 @@ async loadUserAppData(): Promise<void> {
 
       //group_id = group_id;
       const { error: dbError } = await supabase.from('usersapp').insert([
-        { id: data.user?.id, name, email, group_id: groupUUID, photo: photoUrl }
+        { id: data.user?.id, name, email, phone, group_id: groupUUID, photo: photoUrl }
       ]);
 
       if (dbError) {

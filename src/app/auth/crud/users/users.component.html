@@ -28,7 +28,7 @@
         <h2>{{ user.name }}</h2>
         <p>{{ user.email }}</p>
         <p>{{ user.photo }}</p>
-        <p>Grupo: {{  user.group_id?.name }}</p>
+        <p>Grupo: {{  user.group_id.name }}</p>
       </ion-label>
       <ion-buttons slot="end">
         <ion-button color="success" (click)="editUser(user)">
@@ -84,6 +84,16 @@
               name="email"
               required
               [(ngModel)]="newUser.email"
+            ></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="floating">Telefono</ion-label>
+            <ion-input
+              type="phone"
+              name="phone"
+              required
+              [(ngModel)]="newUser.phone"
             ></ion-input>
           </ion-item>
 
@@ -152,21 +162,22 @@
           </ion-item>
 
           <ion-item>
+            <ion-label position="floating">Telefono</ion-label>
+            <ion-input
+              type="phone"
+              name="phone"
+              required
+              [(ngModel)]="newUser.phone"
+            ></ion-input>
+          </ion-item>
+
+          <ion-item>
             <ion-label>Grupo</ion-label>
-            <ion-select name="editGroupId" [(ngModel)]="newUser.group_id">
+            <ion-select name="editGroupId" [(ngModel)]="newUser.group_id" interface="popover">
               <ion-select-option *ngFor="let group of groups" [value]="group.id">
                 {{ group.name }}
               </ion-select-option>
             </ion-select>
-          </ion-item>
-
-          <ion-item>
-            <ion-label>Foto</ion-label>
-            <input
-              type="file"
-              (change)="onFileSelected($event)"
-              accept="image/*"
-            />
           </ion-item>
 
           <ion-button expand="full" type="submit" [disabled]="!formEdit.form.valid">

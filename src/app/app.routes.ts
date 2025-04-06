@@ -65,9 +65,8 @@ export const routes: Routes = [
   },
 
   {
-    path: 'register-supabase',
-    loadComponent: () => import('./components/register/register/register.component').then(m => m.RegisterComponent),
-    // canMatch: [AuthGuard]
+    path: 'access',
+    loadComponent: () => import('./auth/access-reqt/access-reqt.component').then(access => access.AccessReqtComponent),
   },
   {
     path: '',

@@ -1,0 +1,21 @@
+.access{
+  color: red;
+  font-family: "Helvetica Neue",Helvetica;
+  font-size: 18px;
+  margin-bottom: 10px;
+  font-weight: 600;
+  text-align: center;
+  transition: color 0.3s ease;
+  cursor: pointer;
+  &:hover{
+    color: rgb(241, 98, 98);
+  }
+}
+
+.key{
+  color: rgb(5, 92, 206);
+  font-size: 22px;
+  font-weight: 600;
+  text-align: center;
+}
+

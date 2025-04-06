@@ -17,9 +17,6 @@ export interface RequestsI {
   created_at?: string;
   user_id?: string;
   state_id?: string;
-  states?: {
-    name: string;
-  }
 }
 
 export interface TypeRI {

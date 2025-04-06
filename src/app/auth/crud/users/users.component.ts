@@ -78,8 +78,6 @@ export class UsersComponent  implements OnInit {
     if (!searchTerm) return [];
 
     const lowerCaseSearch = searchTerm.toLowerCase();
-
-
       this.filteredUsers = this.users.filter(user =>{
         user.name.toLowerCase().includes(lowerCaseSearch) ||
         user.email.toLowerCase().includes(lowerCaseSearch)
@@ -118,7 +116,7 @@ export class UsersComponent  implements OnInit {
   }
 
   getDefaultUsers(): Models.User.UsersI {
-    return { name: '', email: '', password: '', group_id: { id: '',
+    return { name: '', email: '', phone: '', password: '', group_id: { id: '',
       name: '',
       parentId: '',
       permition_states: false,
@@ -138,6 +136,7 @@ export class UsersComponent  implements OnInit {
       id: '',
       name: '',
       email: '',
+      phone: '',
       password: '',
       group_id: { id: '',
         name: '',
@@ -163,7 +162,7 @@ export class UsersComponent  implements OnInit {
     }
     try {
       this.interactionService.showLoading();
-      await this.supabaseService.signUp(this.newUser.name, this.newUser.email, this.newUser.password, this.newUser.group_id, this.photo);
+      await this.supabaseService.signUp(this.newUser.name, this.newUser.email, this.newUser.phone, this.newUser.password, this.newUser.group_id, this.photo);
       this.interactionService.dismissLoading();
       this.loadUsers();
       this.modal.dismiss(); // 🔒 Cierra el modal
@@ -189,13 +188,21 @@ export class UsersComponent  implements OnInit {
 
     if (this.editingUserId) {
       await this.interactionService.showLoading('Actualizando...');
-      this.userService.updateUser(this.editingUserId, this.newUser).subscribe({
+      const userToUpdate = {
+        ...this.newUser,
+        group_id: this.newUser.group_id.id // Extrae solo el ID del grupo
+      } as any;
+
+      console.log('envia un string', userToUpdate);
+
+      this.userService.updateUser(this.editingUserId, userToUpdate).subscribe({
         next: () => {
           this.isEditing = false;
           this.editingUserId = null;
           this.newUser = this.getDefaultUsers();
           this.loadUsers();
           this.modalEdit.dismiss(this.newUser, 'confirm');
+          this.modal.dismiss();
           this.interactionService.showToast('Usuario actualizado');
         },
         error: (err) => {

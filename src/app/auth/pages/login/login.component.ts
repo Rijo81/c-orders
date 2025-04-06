@@ -2,8 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { IonHeader, IonInput, IonToolbar, IonTitle, IonContent, IonItem, IonLabel, IonButton,
-  IonToggle
- } from "@ionic/angular/standalone";
+  IonToggle, IonIcon } from "@ionic/angular/standalone";
 import { InteractionService } from 'src/app/services/interaction.service';
 import { SupabaseService } from 'src/app/services/supabase/supabase.service';
 
@@ -12,16 +11,13 @@ import { SupabaseService } from 'src/app/services/supabase/supabase.service';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
   standalone: true,
-  imports: [IonButton, IonLabel, IonItem, IonContent, IonTitle, IonToolbar, IonInput, IonHeader, FormsModule,
+  imports: [IonIcon, IonButton, IonLabel, IonItem, IonContent, IonTitle, IonToolbar, IonInput, IonHeader, FormsModule,
     IonToggle, FormsModule, ReactiveFormsModule
   ]
 })
 export class LoginComponent implements OnInit {
-
   loginForm!: FormGroup;
   error: string | null = null;
-
-
 
   constructor(private supabaseService: SupabaseService,
               private router: Router,
@@ -75,6 +71,9 @@ export class LoginComponent implements OnInit {
     }finally{
       this.interactionService.dismissLoading();
     }
+  }
+  goAccessRequest(){
+    this.router.navigate(['/access']);
   }
 
 }

@@ -5,13 +5,15 @@ import { StateI } from 'src/app/models/state.models';
 import { StatesService } from 'src/app/services/crud/states.service';
 import { InteractionService } from 'src/app/services/interaction.service';
 import { RequestsService } from 'src/app/services/requests/requests.service';
-import { IonHeader, IonToolbar, IonButtons, IonButton, IonIcon, IonTitle, IonContent, IonCardHeader,
+import { IonHeader, IonToolbar, IonButtons, IonButton, IonTitle, IonContent, IonCardHeader,
   IonCardTitle, IonCard, IonCardContent, IonItem, IonLabel, IonSelect, IonSelectOption, IonCardSubtitle, IonImg, IonBackButton } from "@ionic/angular/standalone";
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ImageViewModalComponent } from './image-view-modal/image-view-modal.component';
-import { supabase } from 'src/app/core/supabase.client';
 import { ModalController } from '@ionic/angular';
+import { firstValueFrom } from 'rxjs';
+import { getIdFromMaybeObject } from 'src/app/helper/utils';
+
 
 @Component({
   selector: 'app-detail-requests',
@@ -53,36 +55,33 @@ export class DetailRequestsComponent  implements OnInit {
 
   async loadRequestData(requestId: string) {
     try {
-      // Obtener la solicitud
-      const request = await this.requestsService.getRequestById(requestId);
+      // 1. Cargar estados primero
+      await firstValueFrom(this.statesService.getStates()).then(states => {
+        this.states = states;
+      });
 
+      // 2. Cargar solicitud
+      const request = await this.requestsService.getRequestById(requestId);
       if (!request) {
         this.router.navigate(['/view-excuse']);
         return;
       }
 
       this.request = request;
-      this.selectedStateId = request.state_id || null;
+      //this.selectedStateId = typeof request.state_id === 'object' ? request.state_id?.id : request.state_id
+      this.selectedStateId = getIdFromMaybeObject(request.state_id);
+      console.log('que tiene: ' + this.selectedStateId);
 
-      // Obtener los estados
-      this.statesService.getStates().subscribe({
-        next: (states) => this.states = states,
-        error: () => this.interactionService.showToast('Error al cargar estados')
-      });
 
     } catch (err) {
+      console.error('❌ Error cargando datos:', err);
       this.interactionService.showToast('Error al cargar los datos');
     } finally {
       this.isLoading = false;
     }
     // try {
-    //   const [request, states] = await Promise.all([
-    //     this.requestsService.getRequestById(requestId),
-    //     this.statesService.getStates().subscribe({
-    //       next: (states) => this.states = states,
-    //       error: (err) => this.interactionService.showToast('Error al cargar estados')
-    //     })
-    //   ]);
+    //   // Obtener la solicitud
+    //   const request = await this.requestsService.getRequestById(requestId);
 
     //   if (!request) {
     //     this.router.navigate(['/view-excuse']);
@@ -91,6 +90,13 @@ export class DetailRequestsComponent  implements OnInit {
 
     //   this.request = request;
     //   this.selectedStateId = request.state_id || null;
+
+    //   // Obtener los estados
+    //   this.statesService.getStates().subscribe({
+    //     next: (states) => this.states = states,
+    //     error: () => this.interactionService.showToast('Error al cargar estados')
+    //   });
+
     // } catch (err) {
     //   this.interactionService.showToast('Error al cargar los datos');
     // } finally {
@@ -103,25 +109,15 @@ export class DetailRequestsComponent  implements OnInit {
       this.interactionService.showToast('Selecciona un estado válido');
       return;
     }
-
     try {
       await this.requestsService.updateRequestState(this.request.id!, this.selectedStateId);
-      this.interactionService.showToast('✅ Estado actualizado correctamente');
-
-      // Opcional: actualizar el objeto local si lo usas en pantalla
       this.request.state_id = this.selectedStateId;
+      this.interactionService.showToast('✅ Estado actualizado correctamente');
+      this.router.navigate(['/view-excuse']);
     } catch (error) {
       console.error(error);
       this.interactionService.showToast('❌ Error al actualizar estado');
     }
-    // if (!this.selectedStateId) return;
-
-    // try {
-    //   await this.requestsService.updateRequestState(this.request.id!, this.selectedStateId);
-    //   this.interactionService.showToast('Estado actualizado correctamente');
-    // } catch (error) {
-    //   this.interactionService.showToast('Error al actualizar estado');
-    // }
   }
 
   isImage(value: string): boolean {
