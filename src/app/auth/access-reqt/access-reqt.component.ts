@@ -21,7 +21,10 @@ export class AccessReqtComponent implements OnInit {
 
   accessForm: FormGroup;
   groups: GroupsI[] = [];
-
+  message: string = `Tu solicitud fue recibida y está en evaluación. En un tiempo corto se le enviara sus
+    credenciales`;
+  institute: string = `Instituto Politecnico Parroquial Sana Ana.
+                                          (IPOPSA)`
   constructor(
     private fb: FormBuilder,
     private accessService: AccessReqtService,
@@ -47,8 +50,8 @@ export class AccessReqtComponent implements OnInit {
 
     try {
       await this.accessService.saveRequest(formData);
-      // await this.accessService.sendAdminNotification(formData);
-      // await this.accessService.sendUserConfirmation(formData); // 👈 correo al solicitante
+      await this.accessService.sendMailToAdmin(formData); // correo al admin
+      await this.accessService.sendMailToUser(formData, this.message, this.institute); // 👈 correo al solicitante
 
       this.interaction.showToast('✅ Solicitud enviada correctamente');
       this.goLogin();

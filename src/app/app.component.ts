@@ -84,6 +84,7 @@ export class AppComponent implements OnInit, OnDestroy {
       { title: 'Estado Solicitud', url: '/state-requests', icon: 'send', permission: 'permition_state_requests' },
       { title: 'Usuarios', url: '/user-supabase', icon: 'people', permission: 'permition_users' },
       { title: 'Ver Solicitudes', url: '/view-excuse', icon: 'eye', permission: 'permition_viewsolic' },
+      { title: 'Solicitudes Accesso', url: '/view-excuse', icon: 'eye', permission: 'permition_viewsolic' },
     ];
 
     return fullMenu.filter(

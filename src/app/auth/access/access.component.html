@@ -1,0 +1,79 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Estados</ion-title>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+
+  <ion-label>
+    <h1 class="sub-title">Gestión de Estado</h1>
+  </ion-label>
+    <ion-modal #modalCreate>
+      <ng-template>
+        <ion-header>
+          <ion-toolbar>
+            <ion-buttons slot="start">
+              <ion-button (click)="cancelModalCreate()">Cancel</ion-button>
+            </ion-buttons>
+            <ion-title>Crear Estado</ion-title>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content class="ion-padding">
+          <ion-item>
+            <form trigger="form-create"  (submit)="isEditing ? updateState() : addState()">
+                <input type="text" [(ngModel)]="newState.name" placeholder="Nombre" name="name" required>
+                <button type="submit">{{ isEditing ? 'Actualizar' : 'Agregar' }}</button>
+              </form>
+              <hr>
+          </ion-item>
+        </ion-content>
+      </ng-template>
+    </ion-modal>
+
+    <ion-modal #modalUpdate>
+      <ng-template>
+        <ion-header>
+          <ion-toolbar>
+            <ion-buttons slot="start">
+              <ion-button (click)="cancelModalUpdate()">Cancel</ion-button>
+            </ion-buttons>
+            <ion-title>Crear Estado</ion-title>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content class="ion-padding">
+          <ion-item>
+            <form trigger="form-create"  (submit)="isEditing ? updateState() : addState()">
+                <ion-input type="text" [(ngModel)]="newState.name" placeholder="Nombre" name="name" required></ion-input>
+                <button type="submit">{{ isEditing ? 'Actualizar' : 'Agregar' }}</button>
+              </form>
+
+          </ion-item>
+        </ion-content>
+      </ng-template>
+    </ion-modal>
+
+
+  <form [formGroup]="searchForm">
+      <ion-searchbar formControlName="search" placeholder="Buscar usuario" ></ion-searchbar>
+  </form>
+   <ion-list>
+        @for (stat of state; track $index) {
+          <ion-item>
+            <ion-label>
+              <h3>{{stat.name}}</h3>
+            </ion-label>
+            <ion-icon slot="end" name="trash" style="color: red;" (click)="deleteState(stat.id)"></ion-icon>
+            <ion-icon slot="end" name="create" style="color: green;"(click)="editState(stat)"></ion-icon>
+          </ion-item>
+        }
+    </ion-list>
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="openModalCreate()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

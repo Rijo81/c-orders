@@ -28,9 +28,8 @@
       <ion-label>Grupo al que Perteneces</ion-label>
       <ion-select
         formControlName="group"
-        multiple="true"
         placeholder="Selecciona grupo">
-        <ion-select-option *ngFor="let group of groups" [value]="group.id">
+        <ion-select-option *ngFor="let group of groups" [value]="group.name">
           {{ group.name }}
         </ion-select-option>
       </ion-select>
