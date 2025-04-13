@@ -1,16 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
-import { IonHeader, IonToolbar, IonTitle, IonButtons, IonContent, IonMenuButton } from "@ionic/angular/standalone";
-import { ConfigScreenRequestsService } from 'src/app/services/supabase/config/config-screen-requests.service';
+import { IonHeader, IonTitle, IonToolbar, IonButtons, IonContent, IonMenuButton, IonButton } from "@ionic/angular/standalone";
+import { ConfigScreenExcuseService } from 'src/app/services/supabase/config/config-screen-excuse.service';
 
 @Component({
-  selector: 'app-home',
-  templateUrl: './home.component.html',
-  styleUrls: ['./home.component.scss'],
+  selector: 'app-excuse',
+  templateUrl: './excuse.component.html',
+  styleUrls: ['./excuse.component.scss'],
   standalone: true,
-  imports: [IonContent, IonButtons, IonTitle, IonToolbar, IonHeader, IonMenuButton ]
+  imports: [ IonContent, IonButtons, IonToolbar, IonTitle, IonHeader, IonMenuButton ]
 })
-export class HomeComponent  implements OnInit {
+export class ExcuseComponent  implements OnInit {
 
   datos = {
     image: 'assets/logo.png',
@@ -18,7 +18,7 @@ export class HomeComponent  implements OnInit {
     text: ''
   }
 
-  constructor(private imagenTitleTextService: ConfigScreenRequestsService) {}
+  constructor(private imagenTitleTextService: ConfigScreenExcuseService ) {}
 
   ngOnInit() {
     this.imagenTitleTextService.imagenActual$.subscribe((url) => {

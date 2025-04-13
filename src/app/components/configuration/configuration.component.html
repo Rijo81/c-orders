@@ -1,0 +1,87 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Configuraciones</ion-title>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Configuración de Pantalla de Inicio</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content>
+      <!-- Botón para mostrar/ocultar los inputs -->
+      <ion-toggle (click)="showForm.formSolict= !showForm.formSolict">
+        {{ showForm.formSolict ? 'Ocultar formulario' : 'Editar pantalla de inicio (Solicitud)'  }}
+      </ion-toggle>
+      <!-- <ion-button expand="block" (click)="showForm = !showForm">
+        {{ showForm ? 'Ocultar formulario' : 'Editar pantalla de inicio' }}
+      </ion-button> -->
+
+      <!-- FORMULARIO QUE APARECE DINÁMICAMENTE -->
+      <div *ngIf="showForm.formSolict" class="ion-margin-top">
+      <!-- Cambiar Título -->
+      <ion-item>
+        <ion-label position="floating">Título</ion-label>
+        <ion-input [(ngModel)]="newTitle"></ion-input>
+      </ion-item>
+
+      <!-- Cambiar Texto -->
+      <ion-item class="ion-margin-top">
+        <ion-label position="floating">Dirección</ion-label>
+        <ion-input [(ngModel)]="newText"></ion-input>
+      </ion-item>
+      <ion-button expand="block" (click)="updateDataTitleText()">Actualizar</ion-button>
+
+      <!-- Cambiar Imagen -->
+
+      <ion-button expand="block" color="tertiary" class="ion-margin-top" (click)="selectImageFromGaleriy()">
+        Cambiar Imagen Central
+      </ion-button>
+      </div>
+
+    </ion-card-content>
+
+    <ion-card-content>
+      <!-- Botón para mostrar/ocultar los inputs -->
+      <ion-toggle (click)="showForm.formExcuse= !showForm.formExcuse">
+        {{ showForm.formExcuse ? 'Ocultar formulario' : 'Editar pantalla de inicio (Excusa)'  }}
+      </ion-toggle>
+      <!-- <ion-button expand="block" (click)="showForm = !showForm">
+        {{ showForm ? 'Ocultar formulario' : 'Editar pantalla de inicio' }}
+      </ion-button> -->
+
+      <!-- FORMULARIO QUE APARECE DINÁMICAMENTE -->
+      <div *ngIf="showForm.formExcuse" class="ion-margin-top">
+      <!-- Cambiar Título -->
+      <ion-item>
+        <ion-label position="floating">Título</ion-label>
+        <ion-input [(ngModel)]="newTitle"></ion-input>
+      </ion-item>
+
+      <!-- Cambiar Texto -->
+      <ion-item class="ion-margin-top">
+        <ion-label position="floating">Dirección</ion-label>
+        <ion-input [(ngModel)]="newText"></ion-input>
+      </ion-item>
+      <ion-button expand="block" (click)="updateDataTitleTextExcuse()">Actualizar</ion-button>
+
+      <!-- Cambiar Imagen -->
+      <ion-button expand="block" color="tertiary" class="ion-margin-top" (click)="selectImageFromGaleriyExcusa()">
+        Cambiar Imagen Central
+      </ion-button>
+      </div>
+
+    </ion-card-content>
+
+    <ion-item>
+      <ion-label>Modo Oscuro</ion-label>
+      <!-- <ion-toggle [(ngModel)]="showForm.isDarkMode" (ionChange)="toggleDarkMode()"></ion-toggle> -->
+      <ion-toggle [checked]="showForm.isDarkMode" (ionChange)="toggleDarkMode($event)"></ion-toggle>
+    </ion-item>
+  </ion-card>
+</ion-content>

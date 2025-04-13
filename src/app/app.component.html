@@ -1,24 +1,4 @@
 <ion-app>
-  <!-- <ion-header>
-    <ion-toolbar color="primary">
-      <ion-title>Mi App</ion-title>
-
-      <ion-buttons slot="end"> -->
-        <!-- Notificación -->
-        <!-- <ion-button (click)="openNotifications()" fill="clear">
-          <ion-icon name="notifications-outline"></ion-icon>
-          <ion-badge *ngIf="notificationCount > 0" color="danger" class="notif-badge">
-            {{ notificationCount }}
-          </ion-badge>
-        </ion-button> -->
-
-        <!-- Imagen de usuario -->
-        <!-- <ion-avatar slot="end">
-          <img [src]="user?.photo || 'assets/img/default-user.png'" />
-        </ion-avatar>
-      </ion-buttons>
-    </ion-toolbar>
-  </ion-header> -->
   <ion-split-pane contentId="main-content">
 
     <ion-menu *ngIf="showMenu" contentId="main-content" type="overlay">
@@ -50,8 +30,6 @@
             </ion-menu-toggle>
           }
         </ion-list>
-
-
       </ion-content>
     </ion-menu>
     <ion-router-outlet id="main-content"></ion-router-outlet>

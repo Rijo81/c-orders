@@ -2,9 +2,6 @@ import { Injectable } from '@angular/core';
 import { from, map, Observable } from 'rxjs';
 import { supabase } from 'src/app/core/supabase.client';
 import { RequestsI } from 'src/app/models/requests.models';
-// import { addDoc, collection, deleteDoc, doc, Firestore, getDocs, updateDoc } from '@angular/fire/firestore';
-// import { from, Observable } from 'rxjs';
-// import { RequestsI } from 'src/app/models/requests.models';
 
 @Injectable({
   providedIn: 'root'
@@ -105,6 +102,7 @@ export class RequestsService {
       .from('requests')
       .update({ state_id })
       .eq('id', id)
+      .select('user_id')
       .then(({ error }) => {
         if (error) throw error;
       });

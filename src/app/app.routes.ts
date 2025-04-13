@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './guards/auth.guard';
+import { ConfigurationComponent } from './components/configuration/configuration.component';
 // import { AuthGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -22,6 +23,24 @@ export const routes: Routes = [
     loadComponent: () => import('./home/home/home.component').then(h => h.HomeComponent),
     // canMatch: [AuthGuard]
   },
+  {
+    path: 'screen-excuse',
+    canActivate: [AuthGuard],
+    loadComponent: () => import('./home/excuse/excuse.component').then(excuse => excuse.ExcuseComponent),
+    // canMatch: [AuthGuard]
+  },
+  {
+    path: 'config',
+    canActivate: [AuthGuard],
+    loadComponent: () => import('./components/configuration/configuration.component').then(config => config.ConfigurationComponent),
+    // canMatch: [AuthGuard]
+  },
+
+  {
+    path: 'configuration',
+    component: ConfigurationComponent
+  },
+
   {
     path: 'group',
     canActivate: [AuthGuard],

@@ -51,7 +51,8 @@ export class LoginComponent implements OnInit {
 
       const { email, password, rememberMe } = this.loginForm.value;
 
-      await this.supabaseService.signIn(email, password);
+      const { groups } = await this.supabaseService.signIn(email, password);
+      console.log("GRUPO: ", groups);
 
       if (rememberMe) {
         localStorage.setItem('rememberedEmail', email);
@@ -63,7 +64,13 @@ export class LoginComponent implements OnInit {
         localStorage.setItem('rememberMe', 'false');
       }
       this.interactionService.showToast('Sesión iniciada');
-      this.router.navigate(['/user-supabase']);
+
+      if (groups === 'padre') {
+        this.router.navigate(['/screen-excuse']);
+      } else{
+        this.router.navigate(['/home']);
+      }
+
     } catch (error) {
       this.error = "Hay un problema con su credenciales: " + error;
       this.interactionService.showToast('Error al iniciar sesión');

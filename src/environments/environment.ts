@@ -20,7 +20,8 @@ export const environment = {
     templateIdUser: 'template_52mb6lr',
     templateIdAdmin: 'template_li9fghg',
     publicKey: 'WIeiRn9GhuL72YaNi'
-  }
+  },
+  adminPhone: '18099028301'
 };
 
 /*

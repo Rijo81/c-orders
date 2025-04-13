@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { Models } from 'src/app/models/models';
 import { IonHeader, IonToolbar, IonTitle, IonButtons, IonContent, IonLabel, IonList, IonItem, IonAvatar,
   IonIcon, IonFab, IonFabButton, IonMenuButton, IonButton, IonModal, IonSearchbar, IonInput, IonText,
-  IonSelect, IonSelectOption } from "@ionic/angular/standalone";
+  IonSelect, IonSelectOption, IonPopover, PopoverController } from "@ionic/angular/standalone";
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule,  } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { addIcons } from 'ionicons';
@@ -12,13 +12,14 @@ import { GroupsI } from 'src/app/models/groups.models';
 import { GroupService } from 'src/app/services/crud/group.service';
 import { UserService } from 'src/app/services/crud/user.service';
 import { SupabaseService } from 'src/app/services/supabase/supabase.service';
-
+import { Router } from '@angular/router';
+import { UserMenuComponent } from 'src/app/components/user-menu/user-menu.component';
 @Component({
   selector: 'app-users',
   templateUrl: './users.component.html',
   styleUrls: ['./users.component.scss'],
   standalone: true,
-  imports: [IonText, IonInput, IonSearchbar, IonModal, IonButton,  IonIcon, IonItem, IonList, IonLabel, IonContent, IonButtons,
+  imports: [ IonPopover, IonText, IonInput, IonSearchbar, IonModal, IonButton,  IonIcon, IonItem, IonList, IonLabel, IonContent, IonButtons,
     IonTitle, IonToolbar, IonHeader, IonMenuButton, FormsModule, CommonModule, IonFab, IonFabButton,
   ReactiveFormsModule, IonSelectOption, IonAvatar, IonSelect ]
 })
@@ -35,6 +36,9 @@ export class UsersComponent  implements OnInit {
   searchForm!: FormGroup;
   selectedPhoto: File | null = null;
 
+  userPhoto: string = '';
+  showUserMenu = false;
+
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) this.selectedPhoto = file;
@@ -48,11 +52,13 @@ export class UsersComponent  implements OnInit {
               private groupService: GroupService,
               private supabaseService: SupabaseService,
               private interactionService: InteractionService,
+              private router: Router,
+              private popoverCtrl: PopoverController
               ) {
     addIcons({trash,create,add});
   }
 
-  ngOnInit() {
+  async ngOnInit() {
 
     this.searchForm = new FormGroup({
       search: new FormControl('')
@@ -70,6 +76,25 @@ export class UsersComponent  implements OnInit {
       console.log(this.filterUsers(value));
 
     });
+    this.userPhoto =  await this.supabaseService.loadPhoto();
+  }
+  async openUserMenu(ev: Event) {
+    const popover = await this.popoverCtrl.create({
+      component: UserMenuComponent,
+      event: ev,
+      translucent: true,
+      showBackdrop: true
+    });
+    await popover.present();
+  }
+
+  toggleUserMenu() {
+    this.showUserMenu = !this.showUserMenu;
+  }
+
+  logout() {
+    this.supabaseService.signOut();
+    this.router.navigate(['/auth']);
   }
   // Función para filtrar los usuarios
   filterUsers(searchTerm: string) {

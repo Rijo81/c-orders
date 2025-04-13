@@ -11,8 +11,11 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ImageViewModalComponent } from './image-view-modal/image-view-modal.component';
 import { ModalController } from '@ionic/angular';
-import { firstValueFrom } from 'rxjs';
+import { filter, firstValueFrom, throwError } from 'rxjs';
 import { getIdFromMaybeObject } from 'src/app/helper/utils';
+import { environment } from 'src/environments/environment';
+import { SupabaseService } from 'src/app/services/supabase/supabase.service';
+import { NotificationappService } from 'src/app/services/supabase/notification/notificationapp.service';
 
 
 @Component({
@@ -31,25 +34,36 @@ export class DetailRequestsComponent  implements OnInit {
   states: StateI[] = [];
   selectedStateId: string | null = null;
   isLoading = true;
+  userData = {userName: '', userPhone: ''};
+
   modalController = inject(ModalController);
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private requestsService: RequestsService,
+    private supabaseNameService: SupabaseService,
     private statesService: StatesService,
+    private notificationPushService: NotificationappService,
     private interactionService: InteractionService,
   ) {}
 
   objectKeys(obj: Record<string, any>): string[] {
     return Object.keys(obj);
   }
-  ngOnInit(): void {
+  async ngOnInit() {
+
+    try {
+      const user = await this.supabaseNameService.getUserDataName();
+      this.userData.userName = user.name;
+      this.userData.userPhone = user.phone;
+    } catch (error) {
+        this.interactionService.showToast('Nombre de usuario no encontrado');
+    }
     const requestId = this.route.snapshot.paramMap.get('id');
     if (!requestId) {
       this.router.navigate(['/view-excuse']);
       return;
     }
-
     this.loadRequestData(requestId);
   }
 
@@ -79,29 +93,6 @@ export class DetailRequestsComponent  implements OnInit {
     } finally {
       this.isLoading = false;
     }
-    // try {
-    //   // Obtener la solicitud
-    //   const request = await this.requestsService.getRequestById(requestId);
-
-    //   if (!request) {
-    //     this.router.navigate(['/view-excuse']);
-    //     return;
-    //   }
-
-    //   this.request = request;
-    //   this.selectedStateId = request.state_id || null;
-
-    //   // Obtener los estados
-    //   this.statesService.getStates().subscribe({
-    //     next: (states) => this.states = states,
-    //     error: () => this.interactionService.showToast('Error al cargar estados')
-    //   });
-
-    // } catch (err) {
-    //   this.interactionService.showToast('Error al cargar los datos');
-    // } finally {
-    //   this.isLoading = false;
-    // }
   }
 
   async updateState() {
@@ -112,6 +103,8 @@ export class DetailRequestsComponent  implements OnInit {
     try {
       await this.requestsService.updateRequestState(this.request.id!, this.selectedStateId);
       this.request.state_id = this.selectedStateId;
+      this.notificationPushService.updateRequestStatus(this.request.id, this.request.state_id, this.selectedStateId)
+      this.goToWhatsApp(this.userData.userName, this.userData.userPhone);
       this.interactionService.showToast('✅ Estado actualizado correctamente');
       this.router.navigate(['/view-excuse']);
     } catch (error) {
@@ -142,5 +135,19 @@ export class DetailRequestsComponent  implements OnInit {
     });
 
     return await modal.present();
+  }
+
+  //Envio de Mensaje via Whatsapp
+  goToWhatsApp(name: string, phone: string) {
+    const msg = `Hola, soy ${name} del grupo. Solicito acceso al sistema.`;
+    try {
+      const url = `https://wa.me/${'1' + phone}?text=${encodeURIComponent(msg)}`;
+      console.log(url);
+
+      window.open(url, '_blank');
+
+    } catch (error) {
+      this.interactionService.showToast('Error al enviar mensaje: ' + error);
+    }
   }
 }

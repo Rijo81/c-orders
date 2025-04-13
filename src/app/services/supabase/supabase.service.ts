@@ -11,6 +11,7 @@ import { environment } from 'src/environments/environment';
 })
 export class SupabaseService {
 
+  userPhoto: string = '';
   sessionChanged = new BehaviorSubject<Session | null>(null);
   private userSubject = new BehaviorSubject<Models.User.UsersI | null>(null);
   public user$ = this.userSubject.asObservable();
@@ -98,12 +99,43 @@ async loadUserAppData(): Promise<void> {
   async signIn(email: string, password: string) {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      return data;
+      if (error || !data.user) throw error || new Error('No se pudo iniciar sesión');
+
+      const userId = data.user.id;
+
+      const { data: userData, error: groupError } = await supabase
+        .from('usersapp')
+        .select('group_id')
+        .eq('id', userId)
+        .single();
+
+      const { data: groupData } = await supabase
+        .from('groups')
+        .select('name')
+        .eq('id', userData.group_id)
+        .single();
+
+      const groups = groupData.name.toLowerCase();
+
+
+      return { userId, groups};
     } catch (error) {
       console.error("Error en inicio de sesión:", error);
       throw error;
     }
+  }
+
+  async loadPhoto(){
+    const session = await supabase.auth.getSession();
+    const userId = session?.data?.session?.user?.id;
+
+    const { data, error } = await supabase
+      .from('usersapp')
+      .select('photo') // o el campo real que uses
+      .eq('id', userId)
+      .single();
+
+    return this.userPhoto = data?.photo || 'assets/logo.png';
   }
 
   async startSession(email: string, password: string) {
@@ -206,24 +238,25 @@ async loadUserAppData(): Promise<void> {
   return data as Models.User.UsersI ;
   }
 
-  async getUserAppDataRol(): Promise<Models.User.UsersI | null>{ //
+  async getUserDataName(): Promise<{ name: string, phone: string } | null>{ //
 
-    const { data: sessionData } = await supabase.auth.getSession();
-    const userId = sessionData?.session?.user?.id;
-    if (!userId) return null;
+    const { data: session } = await supabase.auth.getSession();
+    const userId = session?.session?.user?.id;
+    if (!userId) {
+      throw new Error('No hay usuario autenticado');
+    }
 
     const { data, error } = await supabase
       .from('usersapp')
-      .select('*, group_id(*)') // 👈 esto es clave
+      .select('id, name, phone') // 👈 esto es clave
       .eq('id', userId)
-      .maybeSingle();
+      .single();
 
     if (error) {
-      console.error('Error al obtener usuario:', error);
-      return null;
+      throw new Error('Error al obtener el nombre del usuario: ' + error.message);
     }
 
-    return data ?? null;
+    return data;
   }
   getUserData(): Observable<Models.User.UsersI | null> {
     return from(

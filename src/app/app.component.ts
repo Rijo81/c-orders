@@ -1,7 +1,8 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { IonApp, IonRouterOutlet, IonSplitPane, IonHeader, IonToolbar, IonNote, IonButtons, IonListHeader,
-  IonContent, IonList, IonItem, IonLabel, IonIcon, IonMenuButton, IonMenu, IonMenuToggle, IonButton, IonTitle, IonBadge, IonAvatar } from '@ionic/angular/standalone';
+  IonContent, IonList, IonItem, IonLabel, IonIcon, IonMenuButton, IonMenu, IonMenuToggle, IonButton,
+  IonAvatar, IonPopover, PopoverController } from '@ionic/angular/standalone';
   import { addIcons } from 'ionicons';
  import * as all from 'ionicons/icons';
 import { SupabaseService } from './services/supabase/supabase.service';
@@ -10,13 +11,15 @@ import { CommonModule } from '@angular/common';
 import { GroupsI } from './models/groups.models';
 import { interval, Subscription } from 'rxjs';
 import { NotificationappService } from './services/supabase/notification/notificationapp.service';
+import { supabase } from 'src/app/core/supabase.client';
+import { UserMenuComponent } from './components/user-menu/user-menu.component';
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
   standalone: true,
-  imports: [IonButton, IonIcon, IonLabel, IonItem, IonList, IonContent, IonListHeader, IonButtons, IonNote, IonToolbar,
+  imports: [ IonButton, IonIcon, IonLabel, IonItem, IonList, IonContent, IonListHeader, IonButtons, IonNote, IonToolbar,
     IonHeader, IonSplitPane, IonApp, IonRouterOutlet, IonMenu, IonMenuButton, IonMenuToggle, RouterLink,
-  CommonModule ],
+  CommonModule],
 })
 export class AppComponent implements OnInit, OnDestroy {
 
@@ -77,6 +80,7 @@ export class AppComponent implements OnInit, OnDestroy {
   getMenuForGroup(group: GroupsI): any[] {
     const fullMenu = [
       { title: 'Inicio', url: '/home', icon: 'home', permission: '' },
+      { title: 'Inicio', url: '/screen-excuse', icon: 'home', permission: '' },
       { title: 'Estados', url: '/state', icon: 'list', permission: 'permition_states' },
       { title: 'Grupos', url: '/group', icon: 'grid', permission: 'permition_groups' },
       { title: 'Tipos Solicitudes', url: '/trequests', icon: 'keypad', permission: 'permition_typerequests' },
@@ -85,6 +89,7 @@ export class AppComponent implements OnInit, OnDestroy {
       { title: 'Usuarios', url: '/user-supabase', icon: 'people', permission: 'permition_users' },
       { title: 'Ver Solicitudes', url: '/view-excuse', icon: 'eye', permission: 'permition_viewsolic' },
       { title: 'Solicitudes Accesso', url: '/view-excuse', icon: 'eye', permission: 'permition_viewsolic' },
+      { title: 'Configuracion', url: '/config', icon: 'settings', permission: '' },
     ];
 
     return fullMenu.filter(
@@ -97,8 +102,14 @@ export class AppComponent implements OnInit, OnDestroy {
   }
   async ngOnInit() {
     await this.loadMenu();
+    this.notificationService.registerPush();
+    this.setInitialTheme();
   }
 
+  setInitialTheme() {
+    const theme = localStorage.getItem('theme') || 'light';
+    document.body.classList.toggle('dark', theme === 'dark');
+  }
   async showReloadAlert() {
     const alert = await this.alertController.create({
       header: 'Sin sesión activa',
@@ -125,17 +136,6 @@ export class AppComponent implements OnInit, OnDestroy {
       })
     });
   }
-
-  private async checkNotifications() {
-    const user = await this.authSupabaseService.getUserAppData();
-
-    if (!user?.id) return;
-
-    this.notificationService.getUnreadNotifications(user.id).subscribe(notifs => {
-      this.notificationCount = notifs.length;
-    });
-  }
-
   openNotifications() {
     this.router.navigate(['/notificaciones']); // o abre un modal
   }
