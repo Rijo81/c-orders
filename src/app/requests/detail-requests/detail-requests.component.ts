@@ -5,8 +5,24 @@ import { StateI } from 'src/app/models/state.models';
 import { StatesService } from 'src/app/services/crud/states.service';
 import { InteractionService } from 'src/app/services/interaction.service';
 import { RequestsService } from 'src/app/services/requests/requests.service';
-import { IonHeader, IonToolbar, IonButtons, IonButton, IonTitle, IonContent, IonCardHeader,
-  IonCardTitle, IonCard, IonCardContent, IonItem, IonLabel, IonSelect, IonSelectOption, IonCardSubtitle, IonImg, IonBackButton } from "@ionic/angular/standalone";
+import {
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonButton,
+  IonTitle,
+  IonContent,
+  IonCardHeader,
+  IonCardTitle,
+  IonCard,
+  IonCardContent,
+  IonItem,
+  IonLabel,
+  IonSelect,
+  IonSelectOption,
+  IonCardSubtitle,
+  IonImg,
+  IonBackButton, IonList, IonPopover, IonAvatar } from '@ionic/angular/standalone';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ImageViewModalComponent } from './image-view-modal/image-view-modal.component';
@@ -16,7 +32,8 @@ import { getIdFromMaybeObject } from 'src/app/helper/utils';
 import { environment } from 'src/environments/environment';
 import { SupabaseService } from 'src/app/services/supabase/supabase.service';
 import { NotificationappService } from 'src/app/services/supabase/notification/notificationapp.service';
-
+import { PopoverController } from '@ionic/angular/standalone';
+import { UserMenuComponent } from 'src/app/components/user-menu/user-menu.component';
 
 @Component({
   selector: 'app-detail-requests',
@@ -24,17 +41,35 @@ import { NotificationappService } from 'src/app/services/supabase/notification/n
   styleUrls: ['./detail-requests.component.scss'],
   providers: [ModalController],
   standalone: true,
-  imports: [IonBackButton, IonImg, IonCardSubtitle, IonLabel, IonItem, IonCardContent, IonCard, IonCardTitle, IonCardHeader,
-    IonContent, IonTitle, IonButton, IonButtons, IonToolbar, IonHeader, IonSelect, IonSelectOption,
-  FormsModule, CommonModule ]
+  imports: [IonAvatar, IonPopover, IonList,
+    IonBackButton,
+    IonCardSubtitle,
+    IonLabel,
+    IonItem,
+    IonCardContent,
+    IonCard,
+    IonCardTitle,
+    IonCardHeader,
+    IonContent,
+    IonTitle,
+    IonButton,
+    IonButtons,
+    IonToolbar,
+    IonHeader,
+    IonSelect,
+    IonSelectOption,
+    FormsModule,
+    CommonModule,
+  ],
 })
-export class DetailRequestsComponent  implements OnInit {
-
+export class DetailRequestsComponent implements OnInit {
   request!: RequestsI;
   states: StateI[] = [];
   selectedStateId: string | null = null;
   isLoading = true;
-  userData = {userName: '', userPhone: ''};
+  userData = { userName: '', userPhone: '' };
+  userPhoto: string = '';
+  showUserMenu = false;
 
   modalController = inject(ModalController);
   constructor(
@@ -45,19 +80,19 @@ export class DetailRequestsComponent  implements OnInit {
     private statesService: StatesService,
     private notificationPushService: NotificationappService,
     private interactionService: InteractionService,
+    private popoverCtrl: PopoverController
   ) {}
 
   objectKeys(obj: Record<string, any>): string[] {
     return Object.keys(obj);
   }
   async ngOnInit() {
-
     try {
       const user = await this.supabaseNameService.getUserDataName();
       this.userData.userName = user.name;
       this.userData.userPhone = user.phone;
     } catch (error) {
-        this.interactionService.showToast('Nombre de usuario no encontrado');
+      this.interactionService.showToast('Nombre de usuario no encontrado');
     }
     const requestId = this.route.snapshot.paramMap.get('id');
     if (!requestId) {
@@ -65,12 +100,31 @@ export class DetailRequestsComponent  implements OnInit {
       return;
     }
     this.loadRequestData(requestId);
+    this.userPhoto =  await this.supabaseNameService.loadPhoto();
   }
 
+  async openUserMenu(ev: Event) {
+    const popover = await this.popoverCtrl.create({
+      component: UserMenuComponent,
+      event: ev,
+      translucent: true,
+      showBackdrop: true,
+    });
+    await popover.present();
+  }
+
+  toggleUserMenu() {
+    this.showUserMenu = !this.showUserMenu;
+  }
+
+  logout() {
+    this.supabaseNameService.signOut();
+    this.router.navigate(['/auth']);
+  }
   async loadRequestData(requestId: string) {
     try {
       // 1. Cargar estados primero
-      await firstValueFrom(this.statesService.getStates()).then(states => {
+      await firstValueFrom(this.statesService.getStates()).then((states) => {
         this.states = states;
       });
 
@@ -85,8 +139,6 @@ export class DetailRequestsComponent  implements OnInit {
       //this.selectedStateId = typeof request.state_id === 'object' ? request.state_id?.id : request.state_id
       this.selectedStateId = getIdFromMaybeObject(request.state_id);
       console.log('que tiene: ' + this.selectedStateId);
-
-
     } catch (err) {
       console.error('❌ Error cargando datos:', err);
       this.interactionService.showToast('Error al cargar los datos');
@@ -101,9 +153,16 @@ export class DetailRequestsComponent  implements OnInit {
       return;
     }
     try {
-      await this.requestsService.updateRequestState(this.request.id!, this.selectedStateId);
+      await this.requestsService.updateRequestState(
+        this.request.id!,
+        this.selectedStateId
+      );
       this.request.state_id = this.selectedStateId;
-      this.notificationPushService.updateRequestStatus(this.request.id, this.request.state_id, this.selectedStateId)
+      this.notificationPushService.updateRequestStatus(
+        this.request.id,
+        this.request.state_id,
+        this.selectedStateId
+      );
       this.goToWhatsApp(this.userData.userName, this.userData.userPhone);
       this.interactionService.showToast('✅ Estado actualizado correctamente');
       this.router.navigate(['/view-excuse']);
@@ -114,7 +173,10 @@ export class DetailRequestsComponent  implements OnInit {
   }
 
   isImage(value: string): boolean {
-    return typeof value === 'string' && (value.startsWith('data:image') || value.startsWith('http'));
+    return (
+      typeof value === 'string' &&
+      (value.startsWith('data:image') || value.startsWith('http'))
+    );
   }
 
   isStringOrNumber(value: any): boolean {
@@ -129,9 +191,9 @@ export class DetailRequestsComponent  implements OnInit {
     const modal = await this.modalController.create({
       component: ImageViewModalComponent, // Asegúrate de tener este componente creado
       componentProps: {
-        image: imageUrl
+        image: imageUrl,
       },
-      cssClass: 'image-modal'
+      cssClass: 'image-modal',
     });
 
     return await modal.present();
@@ -141,11 +203,12 @@ export class DetailRequestsComponent  implements OnInit {
   goToWhatsApp(name: string, phone: string) {
     const msg = `Hola, soy ${name} del grupo. Solicito acceso al sistema.`;
     try {
-      const url = `https://wa.me/${'1' + phone}?text=${encodeURIComponent(msg)}`;
+      const url = `https://wa.me/${'1' + phone}?text=${encodeURIComponent(
+        msg
+      )}`;
       console.log(url);
 
       window.open(url, '_blank');
-
     } catch (error) {
       this.interactionService.showToast('Error al enviar mensaje: ' + error);
     }

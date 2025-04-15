@@ -1,17 +1,20 @@
 import { Component, OnInit } from '@angular/core';
-import { IonHeader, IonToolbar, IonTitle, IonButtons, IonContent, IonButton, IonMenuButton, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonItem, IonLabel, IonInput, IonToggle } from "@ionic/angular/standalone";
-import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { IonHeader, IonToolbar, IonTitle, IonButtons, IonContent, IonButton, IonMenuButton, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonItem, IonLabel, IonInput, IonToggle, PopoverController, IonAvatar, IonPopover, IonList } from '@ionic/angular/standalone';
+import { Camera, CameraResultType, CameraSource  } from '@capacitor/camera';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ConfigScreenRequestsService } from 'src/app/services/supabase/config/config-screen-requests.service';
 import { ConfigScreenExcuseService } from 'src/app/services/supabase/config/config-screen-excuse.service';
+import { SupabaseService } from 'src/app/services/supabase/supabase.service';
+import { UserMenuComponent } from '../user-menu/user-menu.component';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-configuration',
   templateUrl: './configuration.component.html',
   styleUrls: ['./configuration.component.scss'],
   standalone: true,
-  imports: [IonToggle, IonInput, IonLabel, IonItem, IonCardContent, IonCardTitle, IonCardHeader, IonCard, IonButton,
+  imports: [IonList, IonPopover, IonAvatar, IonToggle, IonInput, IonLabel, IonItem, IonCardContent, IonCardTitle, IonCardHeader, IonCard, IonButton,
     IonContent, IonButtons, IonTitle, IonToolbar, IonHeader, IonMenuButton, FormsModule, CommonModule ]
 })
 export class ConfigurationComponent  implements OnInit {
@@ -21,18 +24,42 @@ export class ConfigurationComponent  implements OnInit {
     formExcuse: false,
     isDarkMode: false
   }
-
+  userPhoto: string = '';
+  showUserMenu = false;
   newTitle: string = '';
   newText: string = '';
   constructor(private imageTitleTextService: ConfigScreenRequestsService,
-    private imageTitleTextExcuseService: ConfigScreenExcuseService
+    private imageTitleTextExcuseService: ConfigScreenExcuseService,
+    private supabaseService: SupabaseService,
+    private popoverCtrl: PopoverController,
+    private router: Router
   ) {}
-  ngOnInit(): void {
+  async ngOnInit() {
     console.log('config');
     const storedTheme = localStorage.getItem('theme');
     this.showForm.isDarkMode = storedTheme === 'dark';
     this.applyTheme();
+    this.userPhoto =  await this.supabaseService.loadPhoto();
   }
+
+    async openUserMenu(ev: Event) {
+      const popover = await this.popoverCtrl.create({
+        component: UserMenuComponent,
+        event: ev,
+        translucent: true,
+        showBackdrop: true
+      });
+      await popover.present();
+    }
+
+    toggleUserMenu() {
+      this.showUserMenu = !this.showUserMenu;
+    }
+
+    logout() {
+      this.supabaseService.signOut();
+      this.router.navigate(['/auth']);
+    }
 
   toggleDarkMode(event: any) {
     //this.showForm.isDarkMode = !this.showForm.isDarkMode;

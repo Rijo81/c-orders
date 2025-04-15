@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import {
   IonHeader,
   IonToolbar,
@@ -18,8 +19,7 @@ import {
   IonButton,
   IonSelect,
   IonSelectOption,
-  IonMenuButton,
-} from '@ionic/angular/standalone';
+  IonMenuButton, IonPopover, IonAvatar } from '@ionic/angular/standalone';
 import { delay, filter, retry, take, tap } from 'rxjs';
 import { GroupI, GroupsI } from 'src/app/models/groups.models';
 import { TypeRI } from 'src/app/models/requests.models';
@@ -27,13 +27,15 @@ import { GroupService } from 'src/app/services/crud/group.service';
 import { InteractionService } from 'src/app/services/interaction.service';
 import { SupabaseService } from 'src/app/services/supabase/supabase.service';
 import { TRequestsService } from 'src/app/services/type-requests/t-requests.service';
+import { PopoverController } from '@ionic/angular/standalone';
+import { UserMenuComponent } from 'src/app/components/user-menu/user-menu.component';
 
 @Component({
   selector: 'app-typerequests',
   templateUrl: './typerequests.component.html',
   styleUrls: ['./typerequests.component.scss'],
   standalone: true,
-  imports: [
+  imports: [IonAvatar, IonPopover,
      IonButton,
         IonInput,
         IonItem,
@@ -61,12 +63,16 @@ export class TyperequestsComponent  implements OnInit {
     typeRequestForm: FormGroup;
     typeRequests: TypeRI[] = [];
     groups: GroupsI[] = [];
+    userPhoto: string = '';
+    showUserMenu = false;
 
     constructor(private fb: FormBuilder,
       private typeService: TRequestsService,
       private interactionService: InteractionService,
       private groupService: GroupService,
-      private authSupabaseService: SupabaseService
+      private authSupabaseService: SupabaseService,
+      private router: Router,
+      private popoverCtrl: PopoverController
 
     ) {
       // Inicialización del formulario reactivo
@@ -79,7 +85,7 @@ export class TyperequestsComponent  implements OnInit {
       this.loadTypeRequests();
     }
 
-   ngOnInit() {
+   async ngOnInit() {
     this.authSupabaseService.sessionChanged
         .pipe(
           filter(session => !!session),        // Espera a que la sesión esté lista
@@ -92,8 +98,27 @@ export class TyperequestsComponent  implements OnInit {
           this.loadTypeRequests();
           this.loadGroup();
         });
-    }
 
+        this.userPhoto =  await this.authSupabaseService.loadPhoto();
+    }
+async openUserMenu(ev: Event) {
+        const popover = await this.popoverCtrl.create({
+          component: UserMenuComponent,
+          event: ev,
+          translucent: true,
+          showBackdrop: true,
+        });
+        await popover.present();
+      }
+
+      toggleUserMenu() {
+        this.showUserMenu = !this.showUserMenu;
+      }
+
+      logout() {
+        this.authSupabaseService.signOut();
+        this.router.navigate(['/auth']);
+      }
    loadGroup() {
     console.log('Estamos a dentro del metodo');
 

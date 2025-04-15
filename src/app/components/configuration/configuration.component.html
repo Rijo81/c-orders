@@ -4,7 +4,19 @@
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-avatar (click)="openUserMenu($event)">
+        <img [src]="userPhoto || 'assets/user.png'" />
+      </ion-avatar>
+    </ion-buttons>
   </ion-toolbar>
+  <ion-popover *ngIf="showUserMenu" (ionPopoverDidDismiss)="showUserMenu = false">
+    <ng-template>
+      <ion-list>
+        <ion-item (click)="logout()">Cerrar sesión</ion-item>
+      </ion-list>
+    </ng-template>
+  </ion-popover>
 </ion-header>
 <ion-content>
 
@@ -18,9 +30,6 @@
       <ion-toggle (click)="showForm.formSolict= !showForm.formSolict">
         {{ showForm.formSolict ? 'Ocultar formulario' : 'Editar pantalla de inicio (Solicitud)'  }}
       </ion-toggle>
-      <!-- <ion-button expand="block" (click)="showForm = !showForm">
-        {{ showForm ? 'Ocultar formulario' : 'Editar pantalla de inicio' }}
-      </ion-button> -->
 
       <!-- FORMULARIO QUE APARECE DINÁMICAMENTE -->
       <div *ngIf="showForm.formSolict" class="ion-margin-top">
@@ -80,7 +89,6 @@
 
     <ion-item>
       <ion-label>Modo Oscuro</ion-label>
-      <!-- <ion-toggle [(ngModel)]="showForm.isDarkMode" (ionChange)="toggleDarkMode()"></ion-toggle> -->
       <ion-toggle [checked]="showForm.isDarkMode" (ionChange)="toggleDarkMode($event)"></ion-toggle>
     </ion-item>
   </ion-card>

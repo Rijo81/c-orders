@@ -1,46 +1,55 @@
 <ion-header>
-  <ion-toolbar>
+  <ion-toolbar color="primary">
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/view-excuse"></ion-back-button>
     </ion-buttons>
     <ion-title>Detalle de Solicitud</ion-title>
-  </ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-avatar (click)="openUserMenu($event)">
+        <img [src]="userPhoto || 'assets/user.png'" />
+      </ion-avatar>
+      </ion-buttons>
+    </ion-toolbar>
+    <ion-popover *ngIf="showUserMenu" (ionPopoverDidDismiss)="showUserMenu = false">
+    <ng-template>
+      <ion-list>
+        <ion-item (click)="logout()">Cerrar sesión</ion-item>
+      </ion-list>
+    </ng-template>
+  </ion-popover>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="ion-padding">
-
-  <ion-card *ngIf="request">
+  <ion-card *ngIf="request" class="detail-card">
     <ion-card-header>
       <ion-card-title>{{ request.typeName }}</ion-card-title>
       <ion-card-subtitle>
-        <strong>De:</strong> {{ request.group_origin?.name }} |
-        <strong>Para:</strong> {{ request.group_destine?.name }}
+        <strong>De:</strong> {{ request.group_origin.name }} |
+        <strong>Para:</strong> {{ request.group_destine.name }}
       </ion-card-subtitle>
     </ion-card-header>
 
     <ion-card-content>
-      <ul class="borderlist">
+      <div class="data-list">
         @for (key of objectKeys(request.formData); track $index) {
-          <li class="stylemagin">
-            <strong>{{ key }}:</strong>
+          <div class="data-item">
+            <strong class="data-label">{{ key }}:</strong>
             <ng-container *ngIf="isImage(request.formData[key]); else nonImageContent">
-              <ion-img
+              <img
                 [src]="request.formData[key]"
-                alt="{{ key }}"
-                class="image-size"
-                (click)="openImageModal(request.formData[key])">
-              </ion-img>
+                class="data-image"
+                (click)="openImageModal(request.formData[key])" />
             </ng-container>
             <ng-template #nonImageContent>
               @if (isStringOrNumber(request.formData[key])) {
-                <span>{{ request.formData[key] }}</span>
+                <span class="data-value">{{ request.formData[key] }}</span>
               }
             </ng-template>
-          </li>
+          </div>
         }
-      </ul>
+      </div>
 
-      <ion-item>
+      <ion-item class="custom-select">
         <ion-label>Estado</ion-label>
         <ion-select [(ngModel)]="selectedStateId" placeholder="Seleccione estado">
           <ion-select-option *ngFor="let state of states" [value]="state.id">
@@ -49,11 +58,9 @@
         </ion-select>
       </ion-item>
 
-      <ion-button expand="block" color="primary" (click)="updateState()">
+      <ion-button expand="block" color="success" (click)="updateState()">
         Guardar Estado
       </ion-button>
-      <!-- request.id, selectedStateId -->
     </ion-card-content>
   </ion-card>
-
 </ion-content>

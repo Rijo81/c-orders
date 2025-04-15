@@ -1,0 +1,47 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/view-excuse"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Detalle de Solicitud de Acceso</ion-title>
+    <ion-buttons slot="end">
+      <ion-avatar (click)="openUserMenu($event)">
+        <img [src]="userPhoto || 'assets/user.png'" />
+      </ion-avatar>
+      </ion-buttons>
+    </ion-toolbar>
+    <ion-popover *ngIf="showUserMenu" (ionPopoverDidDismiss)="showUserMenu = false">
+    <ng-template>
+      <ion-list>
+        <ion-item (click)="logout()">Cerrar sesión</ion-item>
+      </ion-list>
+    </ng-template>
+  </ion-popover>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-card *ngIf="access" class="detail-card">
+    <ion-card-header>
+      <ion-card-title>{{ 'Solicitado: ' + access.created_at }}</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <div class="data-list">
+        <ion-item>
+          <ion-label>
+            <h3>{{ access.fullname }}</h3>
+            <p>Email: {{ access.email }}</p>
+            <p>Teléfono: {{ access.phone }}</p>
+            <p>Grupo: {{ access.group }}</p>
+            <p>Información: {{ access.information }}</p>
+          </ion-label>
+        </ion-item>
+      </div>
+      <ion-button expand="block" color="success" (click)="acceptedRequestAccess(access.fullname, access.phone)">
+       Enviar Credenciales
+      </ion-button>
+      <ion-button expand="block" color="danger" (click)="rejectedRequestAccess(access.fullname, access.phone)">
+        Solicitud Rechazada
+       </ion-button>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

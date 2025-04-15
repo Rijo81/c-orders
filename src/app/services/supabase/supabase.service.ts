@@ -25,7 +25,6 @@ export class SupabaseService {
       this.sessionChanged.next(session);
     });
   }
-
   getSupabase() {
     return supabase;
   }
@@ -273,6 +272,12 @@ async loadUserAppData(): Promise<void> {
         return userData as Models.User.UsersI;
       })
     );
+  }
+
+  async resetPasswordEmail(email: string) : Promise< any| null>{
+     await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: 'http://localhost:8100/reset-password'
+    });
   }
 
   // Obtener datos del usuario actual

@@ -1,20 +1,24 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { IonHeader, IonToolbar, IonTitle, IonButtons, IonContent, IonLabel, IonModal, IonButton, IonItem,
-  IonInput, IonSearchbar, IonList, IonIcon, IonFab, IonFabButton, IonMenuButton } from "@ionic/angular/standalone";
+  IonInput, IonSearchbar, IonList, IonIcon, IonFab, IonFabButton, IonMenuButton, IonPopover, IonAvatar } from "@ionic/angular/standalone";
 import { addIcons } from 'ionicons';
 import { add, create, trash } from 'ionicons/icons';
 import { StateI } from 'src/app/models/state.models';
 import { StatesService } from 'src/app/services/crud/states.service';
 import { InteractionService } from 'src/app/services/interaction.service';
+import { PopoverController } from '@ionic/angular/standalone';
+import { SupabaseService } from 'src/app/services/supabase/supabase.service';
+import { UserMenuComponent } from 'src/app/components/user-menu/user-menu.component';
 
 @Component({
   selector: 'app-state',
   templateUrl: './state.component.html',
   styleUrls: ['./state.component.scss'],
   standalone: true,
-  imports: [IonFabButton, IonFab, IonIcon, IonList, IonSearchbar, IonInput, IonItem, IonButton, IonModal,
+  imports: [IonAvatar, IonPopover, IonFabButton, IonFab, IonIcon, IonList, IonSearchbar, IonInput, IonItem, IonButton, IonModal,
     IonLabel, IonContent, IonButtons, IonTitle, IonToolbar, IonHeader, IonMenuButton, FormsModule, CommonModule,
   ReactiveFormsModule ]
 })
@@ -27,7 +31,8 @@ export class StateComponent  implements OnInit {
     //BUSQUEDA // Lista original de usuarios
     filteredStates: StateI[] = []; // Lista filtrada de usuarios
     searchForm!: FormGroup;
-
+    userPhoto: string = '';
+    showUserMenu = false;
 
     @ViewChild('modalCreate') modal!: IonModal;
     @ViewChild('modalUpdate') modalEdit!: IonModal;
@@ -35,11 +40,14 @@ export class StateComponent  implements OnInit {
 
     constructor(private stateService: StatesService,
                 private interactionService: InteractionService,
+                private router: Router,
+                private popoverCtrl: PopoverController,
+                private supabaseService: SupabaseService,
                 ) {
       addIcons({trash, create, add});
     }
 
-    ngOnInit() {
+    async ngOnInit() {
 
       this.searchForm = new FormGroup({
         search: new FormControl('')
@@ -57,7 +65,27 @@ export class StateComponent  implements OnInit {
         console.log(this.filterState(value));
 
       });
+      this.userPhoto =  await this.supabaseService.loadPhoto();
     }
+
+    async openUserMenu(ev: Event) {
+          const popover = await this.popoverCtrl.create({
+            component: UserMenuComponent,
+            event: ev,
+            translucent: true,
+            showBackdrop: true,
+          });
+          await popover.present();
+        }
+
+        toggleUserMenu() {
+          this.showUserMenu = !this.showUserMenu;
+        }
+
+        logout() {
+          this.supabaseService.signOut();
+          this.router.navigate(['/auth']);
+        }
     // Función para filtrar los usuarios
     filterState(searchTerm: string) {
       console.log('Dentro del metodo: ', searchTerm);
@@ -70,11 +98,6 @@ export class StateComponent  implements OnInit {
         });
 
       return this.filteredStates;
-      // query = query.toLowerCase(); // Convertir a minúsculas para búsqueda insensible a mayúsculas
-      // this.filteredUsers = this.users.filter(user =>
-      //   user.name.toLowerCase().includes(query) || // Filtra por nombre
-      //   user.email.toLowerCase().includes(query)   // Filtra por email
-      // );
     }
 
     openModalEdit() {
@@ -113,19 +136,6 @@ export class StateComponent  implements OnInit {
       }
     });
 
-
-      // if (this.newState.name) {
-      //     await this.interactionService.showLoading('Procesando...')
-      //     this.stateService.addState(this.newState).subscribe(() => {
-      //     this.newState = { name: '' };
-      //     this.loadState();
-      //   });
-      // }
-      // this.interactionService.dismissLoading();
-      // this.modal.dismiss(this.newState, 'confirm');
-      // this.interactionService.showToast('Estado creado con éxito');
-      // console.log('Agregado');
-
     }
 
     editState(state: StateI) {
@@ -154,18 +164,6 @@ export class StateComponent  implements OnInit {
           this.interactionService.showToast('Error al actualizar estado: ' + err.message);
         }
       });
-      // if (this.editingStateId) {
-      //   await this.interactionService.showLoading('Actualizado...')
-      //   this.stateService.updateState(this.editingStateId, this.newState).subscribe(() => {
-      //     this.isEditing = false;
-      //     this.editingStateId = null;
-      //     this.newState = { name: '' };
-      //     this.loadState();
-      //   });
-      // }
-      // this.interactionService.dismissLoading();
-      // this.modalEdit.dismiss(this.newState, 'confirm');
-      // this.interactionService.showToast('Estado actualizado');
     }
 
     async deleteState(id: string) {

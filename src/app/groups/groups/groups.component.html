@@ -4,7 +4,19 @@
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-avatar (click)="openUserMenu($event)">
+        <img [src]="userPhoto || 'assets/user.png'" />
+      </ion-avatar>
+    </ion-buttons>
   </ion-toolbar>
+  <ion-popover *ngIf="showUserMenu" (ionPopoverDidDismiss)="showUserMenu = false">
+    <ng-template>
+      <ion-list>
+        <ion-item (click)="logout()">Cerrar sesión</ion-item>
+      </ion-list>
+    </ng-template>
+  </ion-popover>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="ion-padding">

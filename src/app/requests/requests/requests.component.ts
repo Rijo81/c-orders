@@ -4,7 +4,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { IonToolbar, IonHeader, IonTitle, IonButtons, IonContent, IonCard, IonCardHeader, IonCardTitle,
   IonCardContent, IonItem, IonLabel, IonList, IonInput, IonRadioGroup, IonRadio, IonIcon, IonButton,
-  IonCheckbox, IonSelect, IonSelectOption, IonMenuButton } from "@ionic/angular/standalone";
+  IonCheckbox, IonSelect, IonSelectOption, IonMenuButton, IonAvatar, IonPopover } from "@ionic/angular/standalone";
 import { RequestsI, TypeRI } from 'src/app/models/requests.models';
 import { RequestsService } from 'src/app/services/requests/requests.service';
 import { TRequestsService } from 'src/app/services/type-requests/t-requests.service';
@@ -14,13 +14,16 @@ import { SupabaseService } from 'src/app/services/supabase/supabase.service';
 import { delay, filter, retry, take, tap } from 'rxjs';
 import { InteractionService } from 'src/app/services/interaction.service';
 import { StatesService } from 'src/app/services/crud/states.service';
+import { Router } from '@angular/router';
+import { PopoverController } from '@ionic/angular/standalone';
+import { UserMenuComponent } from 'src/app/components/user-menu/user-menu.component';
 
 @Component({
   selector: 'app-requests',
   templateUrl: './requests.component.html',
   styleUrls: ['./requests.component.scss'],
   standalone: true,
-  imports: [IonCheckbox, IonButton, IonIcon, IonRadio, IonRadioGroup, IonInput, IonList, IonLabel, IonItem,
+  imports: [IonPopover, IonAvatar, IonCheckbox, IonButton, IonIcon, IonRadio, IonRadioGroup, IonInput, IonList, IonLabel, IonItem,
     IonCardContent, IonCardTitle, IonCardHeader, IonCard, IonContent, IonButtons, IonTitle, IonHeader,
     IonToolbar, IonMenuButton, IonSelect, IonSelectOption, ReactiveFormsModule, FormsModule, CommonModule ]
 })
@@ -32,15 +35,19 @@ export class RequestsComponent  implements OnInit {
   formData: { [key: string]: any } = {};
   requests: any[] = [];
   fields: any[] = [];
+  userPhoto: string = '';
+  showUserMenu = false;
 
   constructor(private typeService: TRequestsService,
               private requestService: RequestsService,
               private stateService: StatesService,
               private authSupabaseService: SupabaseService,
-              private interactionService: InteractionService) {
+              private interactionService: InteractionService,
+              private router: Router,
+              private popoverCtrl: PopoverController) {
 
   }
-  ngOnInit() {
+  async ngOnInit() {
 
     this.authSupabaseService.sessionChanged
     .pipe(
@@ -57,9 +64,27 @@ export class RequestsComponent  implements OnInit {
     console.log('No esta pasando nada.... que eeee');
     console.log('Loaded Solicitudes:', this.requests);
     console.log('Loaded Tipo Solicitudes:', this.typeRequests);
-
+    this.userPhoto =  await this.authSupabaseService.loadPhoto();
   }
 
+  async openUserMenu(ev: Event) {
+        const popover = await this.popoverCtrl.create({
+          component: UserMenuComponent,
+          event: ev,
+          translucent: true,
+          showBackdrop: true,
+        });
+        await popover.present();
+      }
+
+      toggleUserMenu() {
+        this.showUserMenu = !this.showUserMenu;
+      }
+
+      logout() {
+        this.authSupabaseService.signOut();
+        this.router.navigate(['/auth']);
+      }
   addField(type: string) {
     const newField = {
       name: '',

@@ -38,8 +38,7 @@
       <ion-label>
         <h2>{{ user.name }}</h2>
         <p>{{ user.email }}</p>
-        <p>{{ user.photo }}</p>
-        <p>Grupo: {{  user.group_id.name }}</p>
+        <p>Grupo: {{  user.group_id }}</p>
       </ion-label>
       <ion-buttons slot="end">
         <ion-button color="success" (click)="editUser(user)">
@@ -130,7 +129,7 @@
               accept="image/*"
             />
           </ion-item>
-          <!-- (change)="onFileSelected($event)" -->
+
           <ion-button expand="full" type="submit" [disabled]="!formCreate.form.valid">
             Crear Usuario
           </ion-button>

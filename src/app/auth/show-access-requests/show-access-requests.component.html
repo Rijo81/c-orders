@@ -1,3 +1,43 @@
-<p>
-  show-access-requests works!
-</p>
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Solicitudes de Accesos</ion-title>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-avatar (click)="openUserMenu($event)">
+        <img [src]="userPhoto || 'assets/user.png'" />
+      </ion-avatar>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-popover *ngIf="showUserMenu" (ionPopoverDidDismiss)="showUserMenu = false">
+    <ng-template>
+      <ion-list>
+        <ion-item (click)="logout()">Cerrar sesión</ion-item>
+      </ion-list>
+    </ng-template>
+  </ion-popover>
+</ion-header>
+<ion-content>
+  <ion-list>
+    @for (ar of access; track $index) {
+      <ion-item
+      [ngClass]="{
+        'item-aprobado': ar.status === status.accepted,
+        'item-rechazado': ar.status === status.rejected
+      }"
+      (click)="goToDetails(ar.id)"
+    >
+        <ion-label>
+          <h3>{{ar.fullname}}</h3>
+        </ion-label>
+        <ion-checkbox
+            slot="start"
+            [checked]="ar.status === status.accepted || ar.status === status.rejected"
+            [disabled]="true">
+        </ion-checkbox>
+          <ion-icon slot="end" name="file-tray-stacked" style="color: rgb(37, 3, 175);"></ion-icon>
+      </ion-item>
+    }
+</ion-list>
+</ion-content>

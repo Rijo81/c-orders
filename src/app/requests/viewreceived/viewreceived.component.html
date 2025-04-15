@@ -1,16 +1,28 @@
 <ion-header>
-  <ion-toolbar>
-    <ion-title>Excusas Recibidas</ion-title>
+  <ion-toolbar color="primary">
+    <ion-title class="ion-text-center">Excusas Recibidas</ion-title>
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
-  </ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-avatar (click)="openUserMenu($event)">
+        <img [src]="userPhoto || 'assets/user.png'" />
+      </ion-avatar>
+      </ion-buttons>
+    </ion-toolbar>
+    <ion-popover *ngIf="showUserMenu" (ionPopoverDidDismiss)="showUserMenu = false">
+    <ng-template>
+      <ion-list>
+        <ion-item (click)="logout()">Cerrar sesión</ion-item>
+      </ion-list>
+    </ng-template>
+  </ion-popover>
 </ion-header>
+
 <ion-content [fullscreen]="true" class="ion-padding">
-  <ion-label>
-    <h1 class="sub-title">Excusas de Estudiantes</h1>
-  </ion-label>
-  <ion-card *ngFor="let request of filteredRequests">
+  <h2 class="sub-title">Excusas de Estudiantes</h2>
+
+  <ion-card *ngFor="let request of filteredRequests" class="custom-card" (click)="goToDetails(request.id)">
     <ion-card-header>
       <ion-card-title>{{ request.typeName }}</ion-card-title>
       <ion-card-subtitle>
@@ -18,23 +30,22 @@
         <strong>Para:</strong> {{ request.group_destine.name }}
       </ion-card-subtitle>
     </ion-card-header>
+
     <ion-card-content>
-      <!-- (click)="goViewRequests(request)" -->
-      <ul  class="borderlist">
-        <!-- Mostrar formData dinámicamente -->
-         @for (key of objectKeys(request.formData); track $index) {
-           <li class="stylemagin" (click)="goToDetails(request.id)" >
-             <strong>{{ key }}:</strong>
-              <ng-container *ngIf="isImage(request.formData[key]); else nonImageContent">
-                <ion-img [src]="request.formData[key]" alt="{{ key }}" class="image-size"></ion-img>
-              </ng-container>
-             <ng-template #nonImageContent>
-               @if (isStringOrNumber(request.formData[key])) {
-                 <span> {{ request.formData[key] }}</span>
-               }
-             </ng-template>
-           </li>
-         }
+      <ul class="borderlist">
+        @for (key of objectKeys(request.formData); track $index) {
+          <li class="styled-item">
+            <strong>{{ key }}:</strong>
+            <ng-container *ngIf="isImage(request.formData[key]); else nonImageContent">
+              <img [src]="request.formData[key]" class="preview-img" />
+            </ng-container>
+            <ng-template #nonImageContent>
+              @if (isStringOrNumber(request.formData[key])) {
+                <span>{{ request.formData[key] }}</span>
+              }
+            </ng-template>
+          </li>
+        }
       </ul>
     </ion-card-content>
   </ion-card>

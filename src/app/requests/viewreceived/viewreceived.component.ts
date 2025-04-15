@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { RequestsI } from 'src/app/models/requests.models';
-import { IonHeader, IonToolbar, IonButtons, IonBackButton, IonCard, IonCardHeader, IonCardTitle,
-  IonCardContent, IonContent, IonTitle, IonLabel, IonCardSubtitle, IonImg, IonMenuButton } from "@ionic/angular/standalone";
+import { IonHeader, IonToolbar, IonButtons, IonCard, IonCardHeader, IonCardTitle,
+  IonCardContent, IonContent, IonTitle, IonLabel, IonCardSubtitle, IonImg, IonMenuButton, IonItem, IonList, IonPopover, IonAvatar } from "@ionic/angular/standalone";
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import {  GroupsI } from 'src/app/models/groups.models';
@@ -12,13 +12,15 @@ import { InteractionService } from 'src/app/services/interaction.service';
 import { RequestsService } from 'src/app/services/requests/requests.service';
 import { SupabaseService } from 'src/app/services/supabase/supabase.service';
 import { delay, filter, firstValueFrom, retry, take, tap } from 'rxjs';
+import { PopoverController } from '@ionic/angular/standalone';
+import { UserMenuComponent } from 'src/app/components/user-menu/user-menu.component';
 
 @Component({
   selector: 'app-viewreceived',
   templateUrl: './viewreceived.component.html',
   styleUrls: ['./viewreceived.component.scss'],
   standalone: true,
-  imports: [IonImg, IonCardSubtitle, IonLabel, IonTitle, IonContent, IonCardContent, IonCardTitle, IonCardHeader, IonCard,
+  imports: [IonAvatar, IonPopover, IonList, IonItem,  IonCardSubtitle,  IonTitle, IonContent, IonCardContent, IonCardTitle, IonCardHeader, IonCard,
     IonButtons, IonToolbar, IonHeader, FormsModule, CommonModule, IonMenuButton]
 })
 export class ViewreceivedComponent  implements OnInit {
@@ -29,20 +31,23 @@ export class ViewreceivedComponent  implements OnInit {
   filteredRequests: RequestsI[] = [];
   iLogo: string = 'assets/logo.png';
   selectedUser: Models.User.UsersI | null = null;
+  userPhoto: string = '';
+  showUserMenu = false;
 
   constructor(
     private router: Router,
     private groupService: GroupService,
     private requestsService: RequestsService,
     private authSupabaseService: SupabaseService,
-    private interactionService: InteractionService
+    private interactionService: InteractionService,
+    private popoverCtrl: PopoverController
   ) {}
 
   objectKeys(obj: Record<string, any>): string[] {
     return Object.keys(obj);
   }
 
-  ngOnInit() {
+  async ngOnInit() {
     this.authSupabaseService.sessionChanged
       .pipe(
         filter(session => !!session),
@@ -55,8 +60,27 @@ export class ViewreceivedComponent  implements OnInit {
         this.initializeRequestsView();
         console.log('📦 Todas las solicitudes obtenidas:', this.requests);
       });
-  }
 
+      this.userPhoto =  await this.authSupabaseService.loadPhoto();
+  }
+async openUserMenu(ev: Event) {
+        const popover = await this.popoverCtrl.create({
+          component: UserMenuComponent,
+          event: ev,
+          translucent: true,
+          showBackdrop: true,
+        });
+        await popover.present();
+      }
+
+      toggleUserMenu() {
+        this.showUserMenu = !this.showUserMenu;
+      }
+
+      logout() {
+        this.authSupabaseService.signOut();
+        this.router.navigate(['/auth']);
+      }
   async initializeRequestsView() {
     try {
       this.selectedUser = await this.authSupabaseService.getUserAppData();

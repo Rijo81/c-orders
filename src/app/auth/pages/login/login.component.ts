@@ -30,21 +30,54 @@ export class LoginComponent implements OnInit {
                 });
               }
 
-  ngOnInit() {
+  ngOnInit() { console.log('un momento');
+
+    // const savedEmail = localStorage.getItem('rememberedEmail');
+    // const savedPass = localStorage.getItem('rememberedPassword');
+    // const remember = localStorage.getItem('rememberMe') === 'true';
+
+    // if (savedEmail && savedPass && remember) {
+    //   this.loginForm.setValue({
+    //     email: savedEmail,
+    //     password: savedPass,
+    //     rememberMe: true
+    //   });
+    // } else {
+    //   this.loginForm.reset(); // Solo si no hay datos recordados
+    // }
+
+    // this.error = '';
+
+  }
+
+  ionViewWillEnter() {
+    // Guardamos antes del reset
     const savedEmail = localStorage.getItem('rememberedEmail');
     const savedPass = localStorage.getItem('rememberedPassword');
     const remember = localStorage.getItem('rememberMe') === 'true';
 
-    if (savedEmail && savedPass && remember) {
+    this.loginForm.reset(); // ← resetea, pero ya tenemos los valores guardados
+
+    if (remember && savedEmail && savedPass) {
       this.loginForm.setValue({
         email: savedEmail,
         password: savedPass,
         rememberMe: true
       });
+    } else {
+      this.loginForm.setValue({
+        email: '',
+        password: '',
+        rememberMe: false
+      });
     }
 
+    this.error = '';
   }
-
+  // ionViewWillEnter() {
+  //   this.loginForm.reset();
+  //   this.error = '';
+  // }
   async login() {
     try {
       if (this.loginForm.invalid) return;
@@ -83,4 +116,7 @@ export class LoginComponent implements OnInit {
     this.router.navigate(['/access']);
   }
 
+  goForGot(){
+    this.router.navigate(['/forgot']);
+  }
 }

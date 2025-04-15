@@ -59,30 +59,4 @@ export class UserService {
         })
     );
   }
-  // private usersCollection = collection(this.firestore, 'users');
-  // constructor(private firestore: Firestore) {}
-
-  // // Obtener todos los usuarios
-  // getUsers(): Observable<Models.User.UserI[]> {
-  //   return from(getDocs(this.usersCollection).then(snapshot =>
-  //     snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Models.User.UserI))
-  //   ));
-  // }
-
-  // // Agregar usuario
-  // addUser(user: Models.User.UserI): Observable<void> {
-  //   return from(addDoc(this.usersCollection, user).then(() => {}));
-  // }
-
-  // // Editar usuario
-  // updateUser(id: string, user: Partial<Models.User.UserI>): Observable<void> {
-  //   const userDoc = doc(this.firestore, `users/${id}`);
-  //   return from(updateDoc(userDoc, user));
-  // }
-
-  // // Eliminar usuario
-  // deleteUser(id: string): Observable<void> {
-  //   const userDoc = doc(this.firestore, `users/${id}`);
-  //   return from(deleteDoc(userDoc));
-  // }
 }

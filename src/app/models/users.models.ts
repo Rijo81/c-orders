@@ -22,8 +22,8 @@ export namespace ModelsUsers {
     id?: string,
     name: string,
     email: string,
+    phone?: string,
     password: string,
-    rol:  string,
     group_id: string,
     photo?: string
   }

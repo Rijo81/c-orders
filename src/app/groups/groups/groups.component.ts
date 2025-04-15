@@ -1,26 +1,71 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { IonHeader, IonToolbar, IonTitle, IonButtons, IonContent, IonLabel, IonModal, IonButton, IonItem,
-  IonInput, IonSearchbar, IonList, IonIcon, IonFab, IonFabButton, IonMenuButton, IonSelectOption, IonSelect,
-  IonCheckbox } from "@ionic/angular/standalone";
+import {
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
+import { Router } from '@angular/router';
+import {
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonButtons,
+  IonContent,
+  IonLabel,
+  IonModal,
+  IonButton,
+  IonItem,
+  IonInput,
+  IonSearchbar,
+  IonList,
+  IonIcon,
+  IonFab,
+  IonFabButton,
+  IonMenuButton,
+  IonSelectOption,
+  IonSelect,
+  IonCheckbox, IonPopover, IonAvatar } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { add, create, trash } from 'ionicons/icons';
 import { GroupsI } from 'src/app/models/groups.models';
 import { GroupService } from 'src/app/services/crud/group.service';
 import { InteractionService } from 'src/app/services/interaction.service';
+import { SupabaseService } from 'src/app/services/supabase/supabase.service';
+import { PopoverController } from '@ionic/angular/standalone';
+import { UserMenuComponent } from 'src/app/components/user-menu/user-menu.component';
 @Component({
   selector: 'app-groups',
   templateUrl: './groups.component.html',
   styleUrls: ['./groups.component.scss'],
   standalone: true,
-  imports: [ IonFabButton, IonFab, IonIcon, IonList, IonSearchbar, IonInput, IonItem, IonButton, IonModal,
-    IonLabel, IonContent, IonButtons, IonTitle, IonToolbar, IonHeader, IonMenuButton, ReactiveFormsModule,
-    FormsModule, IonSelectOption, CommonModule, IonSelect, IonCheckbox ]
+  imports: [IonAvatar, IonPopover,
+    IonFabButton,
+    IonFab,
+    IonIcon,
+    IonList,
+    IonSearchbar,
+    IonInput,
+    IonItem,
+    IonButton,
+    IonModal,
+    IonLabel,
+    IonContent,
+    IonButtons,
+    IonTitle,
+    IonToolbar,
+    IonHeader,
+    IonMenuButton,
+    ReactiveFormsModule,
+    FormsModule,
+    IonSelectOption,
+    CommonModule,
+    IonSelect,
+    IonCheckbox,
+  ],
 })
-export class GroupsComponent  implements OnInit {
-
-
+export class GroupsComponent implements OnInit {
   groups: GroupsI[] = [];
   filteredGroups: GroupsI[] = [];
   newGroup: GroupsI = {
@@ -33,36 +78,60 @@ export class GroupsComponent  implements OnInit {
     permition_requests: false,
     permition_viewsolic: false,
     permition_state_requests: false,
-   };
+  };
   isEditing = false;
   editingGroupId: string | null = null;
   selectedGroup: string = '';
   searchForm!: FormGroup;
+  userPhoto: string = '';
+  showUserMenu = false;
 
   @ViewChild('modalCreate') modal!: IonModal;
   @ViewChild('modalUpdate') modalEdit!: IonModal;
 
   constructor(
     private groupService: GroupService,
-    private interactionService: InteractionService
+    private interactionService: InteractionService,
+    private supabaseService: SupabaseService,
+    private router: Router,
+    private popoverCtrl: PopoverController
   ) {
     addIcons({ trash, create, add });
   }
 
-  ngOnInit() {
+  async ngOnInit() {
     this.searchForm = new FormGroup({
-      search: new FormControl('')
+      search: new FormControl(''),
     });
 
-    this.groupService.getGroups().subscribe(group => {
+    this.groupService.getGroups().subscribe((group) => {
       this.groups = group;
     });
 
-    this.searchForm.get('search')?.valueChanges.subscribe(value => {
+    this.searchForm.get('search')?.valueChanges.subscribe((value) => {
       this.filterGroup(value);
     });
+
+    this.userPhoto =  await this.supabaseService.loadPhoto();
+  }
+  async openUserMenu(ev: Event) {
+    const popover = await this.popoverCtrl.create({
+      component: UserMenuComponent,
+      event: ev,
+      translucent: true,
+      showBackdrop: true,
+    });
+    await popover.present();
   }
 
+  toggleUserMenu() {
+    this.showUserMenu = !this.showUserMenu;
+  }
+
+  logout() {
+    this.supabaseService.signOut();
+    this.router.navigate(['/auth']);
+  }
   filterGroup(searchTerm: string) {
     if (!searchTerm) {
       this.filteredGroups = this.groups;
@@ -70,7 +139,7 @@ export class GroupsComponent  implements OnInit {
     }
 
     const lower = searchTerm.toLowerCase();
-    this.filteredGroups = this.groups.filter(group =>
+    this.filteredGroups = this.groups.filter((group) =>
       group.name.toLowerCase().includes(lower)
     );
   }
@@ -100,9 +169,9 @@ export class GroupsComponent  implements OnInit {
         this.filteredGroups = group;
       },
       error: (err) => {
-        console.error("Error al cargar grupos:", err);
+        console.error('Error al cargar grupos:', err);
         this.interactionService.showToast('Error al cargar grupos.');
-      }
+      },
     });
   }
 
@@ -115,7 +184,7 @@ export class GroupsComponent  implements OnInit {
     await this.interactionService.showLoading('Guardando...');
     this.groupService.addGroup(this.newGroup).subscribe({
       next: () => {
-        console.log('datos padres: ',this.newGroup, this.selectedGroup);
+        console.log('datos padres: ', this.newGroup, this.selectedGroup);
         //this.newGroup = { name: '', parentId: this.selectedGroup };
         this.loadGroup();
         this.interactionService.dismissLoading();
@@ -124,9 +193,9 @@ export class GroupsComponent  implements OnInit {
       },
       error: (err) => {
         this.interactionService.dismissLoading();
-        console.error("Error al agregar grupo:", err);
+        console.error('Error al agregar grupo:', err);
         this.interactionService.showToast('Error al crear grupo.');
-      }
+      },
     });
   }
 
@@ -146,22 +215,24 @@ export class GroupsComponent  implements OnInit {
     }
 
     await this.interactionService.showLoading('Actualizando...');
-    this.groupService.updateGroup(this.editingGroupId, this.newGroup).subscribe({
-      next: () => {
-        this.isEditing = false;
-        this.editingGroupId = null;
-        this.newGroup = { name: '', parentId: this.selectedGroup };
-        this.loadGroup();
-        this.interactionService.dismissLoading();
-        this.modalEdit.dismiss(null, 'confirm');
-        this.interactionService.showToast('Grupo actualizado');
-      },
-      error: (err) => {
-        this.interactionService.dismissLoading();
-        console.error("Error al actualizar grupo:", err);
-        this.interactionService.showToast('Error al actualizar grupo.');
-      }
-    });
+    this.groupService
+      .updateGroup(this.editingGroupId, this.newGroup)
+      .subscribe({
+        next: () => {
+          this.isEditing = false;
+          this.editingGroupId = null;
+          this.newGroup = { name: '', parentId: this.selectedGroup };
+          this.loadGroup();
+          this.interactionService.dismissLoading();
+          this.modalEdit.dismiss(null, 'confirm');
+          this.interactionService.showToast('Grupo actualizado');
+        },
+        error: (err) => {
+          this.interactionService.dismissLoading();
+          console.error('Error al actualizar grupo:', err);
+          this.interactionService.showToast('Error al actualizar grupo.');
+        },
+      });
   }
 
   async deleteGroup(id: string) {
@@ -182,9 +253,9 @@ export class GroupsComponent  implements OnInit {
       },
       error: (err) => {
         this.interactionService.dismissLoading();
-        console.error("Error al eliminar grupo:", err);
+        console.error('Error al eliminar grupo:', err);
         this.interactionService.showToast('Error al eliminar grupo.');
-      }
+      },
     });
   }
 }

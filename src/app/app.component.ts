@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { IonApp, IonRouterOutlet, IonSplitPane, IonHeader, IonToolbar, IonNote, IonButtons, IonListHeader,
   IonContent, IonList, IonItem, IonLabel, IonIcon, IonMenuButton, IonMenu, IonMenuToggle, IonButton,
@@ -13,6 +13,7 @@ import { interval, Subscription } from 'rxjs';
 import { NotificationappService } from './services/supabase/notification/notificationapp.service';
 import { supabase } from 'src/app/core/supabase.client';
 import { UserMenuComponent } from './components/user-menu/user-menu.component';
+import { Session } from '@supabase/supabase-js';
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
@@ -21,25 +22,21 @@ import { UserMenuComponent } from './components/user-menu/user-menu.component';
     IonHeader, IonSplitPane, IonApp, IonRouterOutlet, IonMenu, IonMenuButton, IonMenuToggle, RouterLink,
   CommonModule],
 })
-export class AppComponent implements OnInit, OnDestroy {
+export class AppComponent implements OnInit {
 
   showMenu: boolean = true;
-  private refreshSub!: Subscription;
-  private refreshCount: number = 0;
-  private maxAttempts: number = 100;
   public appPages: any[] = [];
   public notificationCount = 0;
-
   constructor(
     private authSupabaseService: SupabaseService,
     private router: Router,
     private menuCtrl:  MenuController,
-    private alertController: AlertController,
     private notificationService: NotificationappService) {
     addIcons(all);
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
-        this.showMenu = !event.url.includes('auth')  && !event.url.includes('access');
+        const hiddenMenuRoutes = ['/auth', '/access'];
+        this.showMenu = !hiddenMenuRoutes.includes(event.url);
         // 👇 Aquí desactivamos el swipe si estás en login
         if (event.url.includes('auth') || event.url.includes('access')) {
           this.menuCtrl.enable(false);  // 🔒 Desactiva swipe
@@ -50,32 +47,18 @@ export class AppComponent implements OnInit, OnDestroy {
     });
   }
   private async loadMenu() {
-    this.refreshSub = interval(1000).subscribe(async () => {
-      const currentUrl = this.router.url;
-      if (currentUrl.includes('access')) {
-        return; // ❌ No ejecutar en esta ruta
-      }
-      this.refreshCount++;
+    const currentUrl = this.router.url;
+    if (currentUrl.includes('access')) return; // ❌ Evita esta ruta
 
-      const user = await this.authSupabaseService.getUserAppData();
+    const user = await this.authSupabaseService.getUserAppData();
 
-      if (user && user.group_id) {
-        const group = user.group_id;
-
-        this.appPages = this.getMenuForGroup(group);
-
-        console.log('🎯 Menú actualizado para el grupo:', group.name);
-
-        // 🔁 ¡Detenemos la verificación!
-        this.refreshSub.unsubscribe();
-      } else if (this.refreshCount >= this.maxAttempts) {
-        console.warn('⛔ Se alcanzó el límite de intentos de refresco sin encontrar usuario.');
-        this.refreshSub.unsubscribe(); // 🔒 Stop si pasamos el máximo de intentos
-        this.showReloadAlert();
-      } else {
-        console.log(`🔄 Intento ${this.refreshCount} de ${this.maxAttempts}...`);
-      }
-    });
+    if (user && user.group_id) {
+      const group = user.group_id;
+      this.appPages = this.getMenuForGroup(group);
+      console.log('🎯 Menú actualizado para el grupo:', group.name);
+    } else {
+      console.warn('⚠️ Usuario sin grupo o no autenticado aún.');
+    }
   }
   getMenuForGroup(group: GroupsI): any[] {
     const fullMenu = [
@@ -88,53 +71,29 @@ export class AppComponent implements OnInit, OnDestroy {
       { title: 'Estado Solicitud', url: '/state-requests', icon: 'send', permission: 'permition_state_requests' },
       { title: 'Usuarios', url: '/user-supabase', icon: 'people', permission: 'permition_users' },
       { title: 'Ver Solicitudes', url: '/view-excuse', icon: 'eye', permission: 'permition_viewsolic' },
-      { title: 'Solicitudes Accesso', url: '/view-excuse', icon: 'eye', permission: 'permition_viewsolic' },
+      { title: 'Solicitudes Accesso', url: '/show-access', icon: 'key', permission: '' },
       { title: 'Configuracion', url: '/config', icon: 'settings', permission: '' },
     ];
-
     return fullMenu.filter(
       item => !item.permission || group[item.permission as keyof GroupsI]
     );
   }
-
-  ngOnDestroy(): void {
-    if (this.refreshSub) this.refreshSub.unsubscribe();
-  }
   async ngOnInit() {
-    await this.loadMenu();
+    this.authSupabaseService.getSessionObservable().subscribe(async (session: Session | null) => {
+      if (session) {
+        await this.loadMenu();
+      }
+    });
     this.notificationService.registerPush();
     this.setInitialTheme();
   }
-
   setInitialTheme() {
     const theme = localStorage.getItem('theme') || 'light';
     document.body.classList.toggle('dark', theme === 'dark');
   }
-  async showReloadAlert() {
-    const alert = await this.alertController.create({
-      header: 'Sin sesión activa',
-      message: 'No se pudo obtener la sesión del usuario. ¿Deseas recargar la aplicación?',
-      buttons: [
-        {
-          text: 'Recargar',
-          handler: async () => {
-            this.refreshCount = 0;
-            this.maxAttempts = 10;
-            await this.loadMenu();
-          }
-        }
-      ],
-      backdropDismiss: false
-    });
-
-    await alert.present();
-  }
-  async logout() {
-    await this.authSupabaseService.signOut().then(() => {
-      this.router.navigate(['/auth']).then(() => {
-        location.reload();
-      })
-    });
+  logout() {
+    this.authSupabaseService.signOut();
+    this.router.navigate(['/auth']);
   }
   openNotifications() {
     this.router.navigate(['/notificaciones']); // o abre un modal

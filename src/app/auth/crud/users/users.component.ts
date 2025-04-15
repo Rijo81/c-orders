@@ -6,7 +6,7 @@ import { IonHeader, IonToolbar, IonTitle, IonButtons, IonContent, IonLabel, IonL
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule,  } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { addIcons } from 'ionicons';
-import { create, trash, add } from 'ionicons/icons';
+import { create, trash, add, createOutline, trashOutline } from 'ionicons/icons';
 import { InteractionService } from 'src/app/services/interaction.service';
 import { GroupsI } from 'src/app/models/groups.models';
 import { GroupService } from 'src/app/services/crud/group.service';
@@ -55,7 +55,7 @@ export class UsersComponent  implements OnInit {
               private router: Router,
               private popoverCtrl: PopoverController
               ) {
-    addIcons({trash,create,add});
+    addIcons({createOutline,trashOutline,add,trash,create});
   }
 
   async ngOnInit() {
@@ -203,31 +203,39 @@ export class UsersComponent  implements OnInit {
   editUser(user: Models.User.UsersI) {
     this.isEditing = true;
     this.editingUserId = user.id!;
-    this.newUser = { ...user };
-    console.log('estamos dentro');
-    this.modalEdit.present();
 
+    const group = typeof user.group_id === 'string'
+      ? this.groups.find(g => g.id === user.group_id.id)
+      : user.group_id;
+
+    this.newUser = {
+      ...user,
+      group_id: group || this.getDefaultUsers().group_id
+    };
+
+    this.modalEdit.present();
   }
 
   async updateUser() {
-
     if (this.editingUserId) {
       await this.interactionService.showLoading('Actualizando...');
+
+      const groupId = typeof this.newUser.group_id === 'object'
+        ? this.newUser.group_id.id
+        : this.newUser.group_id;
+
       const userToUpdate = {
         ...this.newUser,
-        group_id: this.newUser.group_id.id // Extrae solo el ID del grupo
-      } as any;
+        group_id: groupId
+      };
 
-      console.log('envia un string', userToUpdate);
-
-      this.userService.updateUser(this.editingUserId, userToUpdate).subscribe({
+      this.userService.updateUser(this.editingUserId, userToUpdate as any).subscribe({
         next: () => {
           this.isEditing = false;
           this.editingUserId = null;
           this.newUser = this.getDefaultUsers();
           this.loadUsers();
           this.modalEdit.dismiss(this.newUser, 'confirm');
-          this.modal.dismiss();
           this.interactionService.showToast('Usuario actualizado');
         },
         error: (err) => {
@@ -238,6 +246,51 @@ export class UsersComponent  implements OnInit {
       });
     }
   }
+
+  // Usado en ion-select para evitar errores de comparación
+  compareWithFn = (o1: any, o2: any) => {
+    return typeof o1 === 'object' && typeof o2 === 'object'
+      ? o1.id === o2.id
+      : o1 === o2;
+  };
+
+  // editUser(user: Models.User.UsersI) {
+  //   this.isEditing = true;
+  //   this.editingUserId = user.id!;
+  //   this.newUser = { ...user };
+  //   console.log('estamos dentro');
+  //   this.modalEdit.present();
+  // }
+
+  // async updateUser() {
+
+  //   if (this.editingUserId) {
+  //     await this.interactionService.showLoading('Actualizando...');
+  //     const userToUpdate = {
+  //       ...this.newUser,
+  //       group_id: this.newUser.group_id.id // Extrae solo el ID del grupo
+  //     } as any;
+
+  //     console.log('envia un string', userToUpdate);
+
+  //     this.userService.updateUser(this.editingUserId, userToUpdate).subscribe({
+  //       next: () => {
+  //         this.isEditing = false;
+  //         this.editingUserId = null;
+  //         this.newUser = this.getDefaultUsers();
+  //         this.loadUsers();
+  //         this.modalEdit.dismiss(this.newUser, 'confirm');
+  //         this.modal.dismiss();
+  //         this.interactionService.showToast('Usuario actualizado');
+  //       },
+  //       error: (err) => {
+  //         this.interactionService.showToast('Error al actualizar usuario');
+  //         console.error(err);
+  //       },
+  //       complete: () => this.interactionService.dismissLoading()
+  //     });
+  //   }
+  // }
 
   async deleteUser(id: string) {
 

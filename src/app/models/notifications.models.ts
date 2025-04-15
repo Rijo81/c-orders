@@ -6,7 +6,6 @@ export namespace ModelsNotifications {
     user_id?: string;
     is_read: boolean;
     created_at: string;
-}
-
+  }
 }
 

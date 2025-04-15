@@ -1,13 +1,9 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './guards/auth.guard';
 import { ConfigurationComponent } from './components/configuration/configuration.component';
-// import { AuthGuard } from './guards/auth.guard';
+import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
 
 export const routes: Routes = [
-  // {
-  //   path: 'login',
-  //   loadComponent: () => import('./home/home.page').then((m) => m.HomePage),
-  // },
   {
     path: 'auth',
     loadChildren: () => import('./auth/auth.module').then((m) => m.AuthModule),
@@ -40,7 +36,15 @@ export const routes: Routes = [
     path: 'configuration',
     component: ConfigurationComponent
   },
-
+  {
+    path: 'reset-password',
+    component: ResetPasswordComponent
+  },
+  {
+    path: 'forgot',
+    loadComponent: () => import('./auth/forgot-password/forgot-password.component').then(forgot => forgot.ForgotPasswordComponent),
+    // canMatch: [AuthGuard]
+  },
   {
     path: 'group',
     canActivate: [AuthGuard],
@@ -82,10 +86,19 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
     loadComponent: () => import('./requests/detail-requests/detail-requests.component').then(detail => detail.DetailRequestsComponent),
   },
-
   {
     path: 'access',
     loadComponent: () => import('./auth/access-reqt/access-reqt.component').then(access => access.AccessReqtComponent),
+  },
+  {
+    path: 'show-access',
+    canActivate: [AuthGuard],
+    loadComponent: () => import('./auth/show-access-requests/show-access-requests.component').then(show => show.ShowAccessRequestsComponent),
+  },
+  {
+    path: 'details-access/:id',
+    canActivate: [AuthGuard],
+    loadComponent: () => import('./auth/show-access-requests/details-access/details-access.component').then(detail => detail.DetailsAccessComponent),
   },
   {
     path: '',

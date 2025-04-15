@@ -4,17 +4,20 @@ import { InteractionService } from 'src/app/services/interaction.service';
 import { RequestsService } from 'src/app/services/requests/requests.service';
 import { SupabaseService } from 'src/app/services/supabase/supabase.service';
 import { IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonAvatar, IonLabel, IonText,
-  IonButtons, IonMenuButton, IonImg } from "@ionic/angular/standalone";
+  IonButtons, IonMenuButton, IonImg, IonPopover } from "@ionic/angular/standalone";
 import { CommonModule } from '@angular/common';
 import { StateI } from 'src/app/models/state.models';
 import { StatesService } from 'src/app/services/crud/states.service';
+import { Router } from '@angular/router';
+import { PopoverController } from '@ionic/angular/standalone';
+import { UserMenuComponent } from 'src/app/components/user-menu/user-menu.component';
 
 @Component({
   selector: 'app-states-requests',
   templateUrl: './states-requests.component.html',
   styleUrls: ['./states-requests.component.scss'],
   standalone: true,
-  imports: [IonImg, IonButtons, IonText, IonLabel, IonAvatar, IonItem, IonList, IonContent, IonTitle, IonToolbar, IonHeader,
+  imports: [IonPopover, IonImg, IonButtons, IonText, IonLabel, IonAvatar, IonItem, IonList, IonContent, IonTitle, IonToolbar, IonHeader,
     CommonModule, IonMenuButton
   ]
 })
@@ -23,12 +26,16 @@ export class StatesRequestsComponent  implements OnInit {
   requests: RequestsI[] = [];
   states: StateI[] = [];
   isLoading = true;
+  userPhoto: string = '';
+  showUserMenu = false;
 
   constructor(
     private requestsService: RequestsService,
     private statesService: StatesService,
     private authSupabaseService: SupabaseService,
-    private interactionService: InteractionService
+    private interactionService: InteractionService,
+    private router: Router,
+    private popoverCtrl: PopoverController
   ) {}
 
   async ngOnInit() {
@@ -44,8 +51,27 @@ export class StatesRequestsComponent  implements OnInit {
 
     this.loadRequests(user.data.user.id);
     this.isLoading = false;
+    this.userPhoto =  await this.authSupabaseService.loadPhoto();
   }
 
+   async openUserMenu(ev: Event) {
+          const popover = await this.popoverCtrl.create({
+            component: UserMenuComponent,
+            event: ev,
+            translucent: true,
+            showBackdrop: true,
+          });
+          await popover.present();
+        }
+
+        toggleUserMenu() {
+          this.showUserMenu = !this.showUserMenu;
+        }
+
+        logout() {
+          this.authSupabaseService.signOut();
+          this.router.navigate(['/auth']);
+        }
   loadStates() {
      this.statesService.getStates().subscribe({
       next: (data) => this.states = data,

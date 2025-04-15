@@ -1,14 +1,19 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
-import { IonHeader, IonToolbar, IonTitle, IonButtons, IonContent, IonMenuButton } from "@ionic/angular/standalone";
+import { IonHeader, IonToolbar, IonTitle, IonButtons, IonContent, IonMenuButton, PopoverController, IonAvatar, IonPopover, IonList, IonItem } from '@ionic/angular/standalone';
+import { UserMenuComponent } from 'src/app/components/user-menu/user-menu.component';
 import { ConfigScreenRequestsService } from 'src/app/services/supabase/config/config-screen-requests.service';
+import { SupabaseService } from 'src/app/services/supabase/supabase.service';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
   standalone: true,
-  imports: [IonContent, IonButtons, IonTitle, IonToolbar, IonHeader, IonMenuButton ]
+  imports: [IonItem, IonList, IonPopover, IonAvatar, IonContent, IonButtons, IonTitle, IonToolbar,
+    IonHeader, IonMenuButton, CommonModule ]
 })
 export class HomeComponent  implements OnInit {
 
@@ -16,18 +21,42 @@ export class HomeComponent  implements OnInit {
     image: 'assets/logo.png',
     title: '',
     text: ''
-  }
+  };
+  userPhoto: string = '';
+  showUserMenu = false;
 
-  constructor(private imagenTitleTextService: ConfigScreenRequestsService) {}
+  constructor(private imagenTitleTextService: ConfigScreenRequestsService,
+              private supabaseService: SupabaseService,
+              private router: Router,
+              private popoverCtrl: PopoverController
+  ) {}
 
-  ngOnInit() {
+  async ngOnInit() {
     this.imagenTitleTextService.imagenActual$.subscribe((url) => {
       this.datos.image = url;
     });
     this.imagenTitleTextService.title$.subscribe(title => this.datos.title = title);
     this.imagenTitleTextService.text$.subscribe(text => this.datos.text = text);
+    this.userPhoto =  await this.supabaseService.loadPhoto();
   }
+ async openUserMenu(ev: Event) {
+      const popover = await this.popoverCtrl.create({
+        component: UserMenuComponent,
+        event: ev,
+        translucent: true,
+        showBackdrop: true,
+      });
+      await popover.present();
+    }
 
+    toggleUserMenu() {
+      this.showUserMenu = !this.showUserMenu;
+    }
+
+    logout() {
+      this.supabaseService.signOut();
+      this.router.navigate(['/auth']);
+    }
   async seleccionarImagen() {
     try {
       const image = await Camera.getPhoto({
